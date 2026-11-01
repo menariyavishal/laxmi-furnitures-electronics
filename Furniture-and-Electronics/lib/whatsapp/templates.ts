@@ -1,7 +1,7 @@
 /**
  * WhatsApp Message Templates
  *
- * Professional, markdown-formatted message generators for Laxmi Electronics & Furnitures.
+ * Professional, concise, markdown-formatted message generators for Laxmi Electronics & Furnitures.
  */
 
 import {
@@ -14,14 +14,14 @@ import {
   VendorPaymentTemplateData,
 } from "./types";
 
-const STORE_SIGNATURE = `📞 Helpline & Support: +91 99282 03203\n_Laxmi Electronics & Furnitures, Kanore_`;
+const STORE_SIGNATURE = `📞 Helpline & Support: +91 63755 91682\n_Laxmi Electronics & Furnitures, Main Market, Kanore_`;
 
 function formatCurrency(amount: number): string {
   return Number(amount || 0).toLocaleString("en-IN");
 }
 
 /**
- * 1. Walk-in Billing Message
+ * 1. Walk-in / Immediate Tax Invoice Message (Used for Regular & Furniture Invoices)
  */
 export function formatBillInvoiceMessage(data: BillTemplateData): string {
   const hasDue = data.dueAmount > 0;
@@ -33,13 +33,14 @@ export function formatBillInvoiceMessage(data: BillTemplateData): string {
     `Thank you for shopping with us! Here is your official invoice *#${data.billNumber}*.`,
     ``,
     `📊 *Bill Summary:*`,
+    `• Invoice No: *#${data.billNumber}*`,
     `• Date: ${data.date}`,
     `• Total Amount: *₹${formatCurrency(data.totalAmount)}*`,
     `• Amount Paid: *₹${formatCurrency(data.paidAmount)}*`,
     `• Balance Due: *₹${formatCurrency(data.dueAmount)}*`,
     ``,
     hasDue
-      ? `⚠️ *Payment Notice:*\nAn outstanding balance of *₹${formatCurrency(data.dueAmount)}* is pending on this invoice. Please settle at your convenience.`
+      ? `⚠️ *Payment Status:* Pending balance of *₹${formatCurrency(data.dueAmount)}*`
       : `✅ *Payment Status:* Paid in Full`,
     ``,
     `📄 Your invoice PDF is attached below for your records.`,
@@ -49,57 +50,34 @@ export function formatBillInvoiceMessage(data: BillTemplateData): string {
 }
 
 /**
- * 2.0 Advance Booking Confirmation Message
+ * 2.0 Advance Booking Confirmation Message (Concise, no verbose breakdown)
  */
 export function formatBookingNewMessage(data: BookingNewTemplateData): string {
   const lines: string[] = [
     `🎉 *BOOKING CONFIRMATION: LAXMI ELECTRONICS & FURNITURES*`,
     ``,
     `Namaste *${data.customerName}* ji 🙏,`,
-    `Your advance booking has been successfully confirmed!`,
+    `Your advance package booking has been confirmed!`,
     ``,
     `🔖 *Booking Reference:* *${data.bookingNumber}*`,
     `📅 *Target Delivery Date:* *${data.expectedDeliveryDate}*`,
   ];
 
   if (data.eventDate) {
-    lines.push(`🎊 *Event / Function Date:* ${data.eventDate}`);
-  }
-
-  lines.push(``, `📦 *Package Breakdown:*`);
-
-  if (data.furnitureCount > 0) {
-    lines.push(
-      `• *Furniture Package:* ₹${formatCurrency(data.furnitureSubtotal)} (${data.furnitureCount} item${data.furnitureCount === 1 ? "" : "s"})`
-    );
-    if (data.furnitureBillNumber) {
-      lines.push(`  ↳ _Immediate Furniture Invoice: #${data.furnitureBillNumber}_`);
-    }
-  }
-
-  if (data.electronicsCount > 0) {
-    lines.push(
-      `• *Electronics Package:* ₹${formatCurrency(data.electronicsSubtotal)} (${data.electronicsCount} item${data.electronicsCount === 1 ? "" : "s"})`
-    );
-    lines.push(`  ↳ _Invoices & warranties will be generated on scheduled delivery._`);
+    lines.push(`🎊 *Event Date:* ${data.eventDate}`);
   }
 
   lines.push(
     ``,
-    `💰 *Financial Summary:*`,
-    `• Total Estimated Package: *₹${formatCurrency(data.totalAmount)}*`,
-    `• Advance Paid Today: *₹${formatCurrency(data.advancePaid)}*`,
-    `• Remaining Balance Due: *₹${formatCurrency(data.remainingBalance)}*`,
+    `💰 *Payment Details:*`,
+    `• Total Package: *₹${formatCurrency(data.totalAmount)}*`,
+    `• Advance Paid: *₹${formatCurrency(data.advancePaid)}*`,
+    `• Balance Due on Delivery: *₹${formatCurrency(data.remainingBalance)}*`,
     ``,
-    `📎 *Attached Documents:*`,
-    `1. Official Booking Slip PDF (with your chosen design specifications embedded)`
+    `📄 Your official Booking Slip PDF is attached below.`,
+    ``,
+    STORE_SIGNATURE
   );
-
-  if (data.furnitureBillNumber) {
-    lines.push(`2. Furniture Tax Invoice PDF (#${data.furnitureBillNumber})`);
-  }
-
-  lines.push(``, STORE_SIGNATURE);
 
   return lines.join("\n");
 }
@@ -112,32 +90,29 @@ export function formatDeliveryInvoiceMessage(data: DeliveryInvoiceTemplateData):
     `⚡ *DELIVERY INVOICE: LAXMI ELECTRONICS*`,
     ``,
     `Namaste *${data.customerName}* ji 🙏,`,
-    `Your electronics package for Booking *#${data.bookingNumber}* has been billed and prepared for dispatch!`,
+    `Your electronics delivery for Booking *#${data.bookingNumber}* has been billed and prepared!`,
     ``,
     `🧾 *Invoice Number:* *${data.billNumber}*`,
     `📅 *Dispatch Date:* ${data.deliveryDate}`,
     ``,
-    `📺 *Items & Warranty Coverage:*`,
+    `📺 *Items Delivered:*`,
   ];
 
   for (const item of data.items) {
     lines.push(`• *${item.productName}* (Qty: ${item.quantity})`);
     if (item.serialNumber) {
-      lines.push(`  - Serial / IMEI: \`${item.serialNumber}\``);
-    }
-    if (item.warrantyMonths) {
-      lines.push(`  - Warranty Coverage: ${item.warrantyMonths} Months`);
+      lines.push(`  - Serial: \`${item.serialNumber}\``);
     }
   }
 
   lines.push(
     ``,
-    `💳 *Payment & Booking Ledger:*`,
+    `💳 *Payment Ledger:*`,
     `• Invoice Total: *₹${formatCurrency(data.invoiceTotal)}*`,
-    `• Paid with this Delivery: *₹${formatCurrency(data.amountPaidNow)}*`,
+    `• Paid with Delivery: *₹${formatCurrency(data.amountPaidNow)}*`,
     `• Remaining Booking Balance: *₹${formatCurrency(data.remainingBalance)}*`,
     ``,
-    `📄 Attached is your official electronics invoice with warranty & serial details.`,
+    `📄 Attached is your delivery tax invoice with warranty coverage.`,
     ``,
     STORE_SIGNATURE
   );
@@ -150,7 +125,7 @@ export function formatDeliveryInvoiceMessage(data: DeliveryInvoiceTemplateData):
  */
 export function formatBookingSettledMessage(data: BookingSettledTemplateData): string {
   return [
-    `🎊 *ORDER COMPLETED & SETTLED: LAXMI ELECTRONICS & FURNITURES*`,
+    `🎊 *ORDER COMPLETED: LAXMI ELECTRONICS & FURNITURES*`,
     ``,
     `Namaste *${data.customerName}* ji 🙏,`,
     `Heartiest congratulations! Your order *#${data.bookingNumber}* has been fully delivered and all accounts are settled.`,
@@ -161,14 +136,9 @@ export function formatBookingSettledMessage(data: BookingSettledTemplateData): s
     `• Outstanding Balance: *₹0 (Fully Paid)*`,
     `• Delivery Status: *All Items Delivered* ✅`,
     ``,
-    `📑 Attached for your records:`,
-    `• Final Consolidated Booking Slip`,
-    `• Complete Tax Invoices (Furniture & Electronics)`,
+    `Thank you for choosing Laxmi Electronics & Furnitures!`,
     ``,
-    `It was our absolute pleasure serving your family. We wish you wonderful memories with your new furniture & appliances!`,
-    ``,
-    `🌟 _Thank you for choosing Laxmi Electronics & Furnitures, Kanore._`,
-    `📞 Helpline: +91 99282 03203`,
+    STORE_SIGNATURE,
   ].join("\n");
 }
 
@@ -177,17 +147,17 @@ export function formatBookingSettledMessage(data: BookingSettledTemplateData): s
  */
 export function formatBookingSlipCopyMessage(data: BookingSlipCopyTemplateData): string {
   return [
-    `📋 *BOOKING COPY: LAXMI ELECTRONICS & FURNITURES*`,
+    `📋 *BOOKING SLIP: LAXMI ELECTRONICS & FURNITURES*`,
     ``,
     `Namaste *${data.customerName}* ji 🙏,`,
-    `Here is a copy of your Booking Slip for Booking *#${data.bookingNumber}*.`,
+    `Here is your Booking Slip for Booking *#${data.bookingNumber}*.`,
     ``,
-    `• Scheduled Delivery: ${data.expectedDeliveryDate}`,
-    `• Total Package Value: ₹${formatCurrency(data.totalAmount)}`,
-    `• Advance Paid: ₹${formatCurrency(data.advancePaid)}`,
-    `• Remaining Balance Due: ₹${formatCurrency(data.remainingBalance)}`,
+    `• Target Delivery: *${data.expectedDeliveryDate}*`,
+    `• Total Package: *₹${formatCurrency(data.totalAmount)}*`,
+    `• Advance Paid: *₹${formatCurrency(data.advancePaid)}*`,
+    `• Balance Due on Delivery: *₹${formatCurrency(data.remainingBalance)}*`,
     ``,
-    `📎 Your official Booking Slip PDF (with attached design references) is attached below.`,
+    `📄 Your official Booking Slip PDF is attached below.`,
     ``,
     STORE_SIGNATURE,
   ].join("\n");
@@ -205,11 +175,9 @@ export function formatDuePaymentMessage(data: DuePaymentTemplateData): string {
       `Thank you! Your payment of *₹${formatCurrency(data.installmentAmount)}* for Invoice *#${data.billNumber}* has fully settled your account.`,
       ``,
       `✅ *Account Status:*`,
-      `• Total Bill Amount: ₹${formatCurrency(data.totalAmount)}`,
-      `• Total Paid: ₹${formatCurrency(data.totalAmount)}`,
-      `• *Outstanding Balance: ₹0 (NIL DUES)*`,
-      ``,
-      `Your account for this invoice is now completely cleared. Thank you for your prompt payment!`,
+      `• Total Bill Amount: *₹${formatCurrency(data.totalAmount)}*`,
+      `• Total Paid: *₹${formatCurrency(data.totalAmount)}*`,
+      `• Outstanding Balance: *₹0 (NIL DUES)*`,
       ``,
       `📄 Attached is your final zero-dues receipt.`,
       ``,
@@ -229,9 +197,9 @@ export function formatDuePaymentMessage(data: DuePaymentTemplateData): string {
     `• Date: ${data.paymentDate}`,
     ``,
     `📊 *Updated Account Status:*`,
-    `• Total Bill Amount: ₹${formatCurrency(data.totalAmount)}`,
-    `• Total Paid Till Date: *₹${formatCurrency(data.paidAmount)}*`,
-    `• *Remaining Balance Due:* *₹${formatCurrency(data.dueAmount)}*`,
+    `• Total Bill Amount: *₹${formatCurrency(data.totalAmount)}*`,
+    `• Total Paid: *₹${formatCurrency(data.paidAmount)}*`,
+    `• Balance Due: *₹${formatCurrency(data.dueAmount)}*`,
     ``,
     `📄 Your updated payment receipt is attached.`,
     ``,
@@ -250,19 +218,15 @@ export function formatVendorPaymentMessage(data: VendorPaymentTemplateData): str
       `🤝 *FULL SETTLEMENT ADVICE: LAXMI ELECTRONICS & FURNITURES*`,
       ``,
       `Dear *${data.vendorName}*${companySuffix},`,
-      `We have disbursed the final settlement payment of *₹${formatCurrency(data.amountPaid)}* for Purchase Reference *#${data.purchaseNumber}*.`,
+      `We have disbursed the final settlement payment of *₹${formatCurrency(data.amountPaid)}* for Purchase *#${data.purchaseNumber}*.`,
       ``,
       `✅ *Settlement Details:*`,
-      `• Purchase Total: ₹${formatCurrency(data.totalAmount)}`,
-      `• Total Disbursed: ₹${formatCurrency(data.totalAmount)}`,
-      `• *Outstanding Balance: ₹0 (Fully Settled)*`,
+      `• Purchase Total: *₹${formatCurrency(data.totalAmount)}*`,
+      `• Total Disbursed: *₹${formatCurrency(data.totalAmount)}*`,
+      `• Outstanding Balance: *₹0 (Fully Settled)*`,
       `• Payment Mode: ${data.paymentMode}${data.transactionRef ? ` | Ref: ${data.transactionRef}` : ""}`,
       ``,
-      `This purchase order is now fully settled with nil balance. Thank you for your partnership!`,
-      ``,
-      `Warm regards,`,
-      `*Laxmi Electronics & Furnitures*`,
-      `Kanore, Rajasthan | +91 99282 03203`,
+      STORE_SIGNATURE,
     ].join("\n");
   }
 
@@ -278,15 +242,10 @@ export function formatVendorPaymentMessage(data: VendorPaymentTemplateData): str
     `• Date: ${data.paymentDate}`,
     ``,
     `📊 *Vendor Ledger Status:*`,
-    `• Purchase Total: ₹${formatCurrency(data.totalAmount)}`,
-    `• Total Paid Till Date: *₹${formatCurrency(data.paidAmount)}*`,
-    `• *Remaining Payable Balance:* *₹${formatCurrency(data.dueAmount)}*`,
+    `• Purchase Total: *₹${formatCurrency(data.totalAmount)}*`,
+    `• Total Paid: *₹${formatCurrency(data.paidAmount)}*`,
+    `• Remaining Balance: *₹${formatCurrency(data.dueAmount)}*`,
     ``,
-    `Please acknowledge receipt in your ledger records.`,
-    ``,
-    `Warm regards,`,
-    `*Laxmi Electronics & Furnitures*`,
-    `Kanore, Rajasthan | +91 99282 03203`,
+    STORE_SIGNATURE,
   ].join("\n");
 }
-

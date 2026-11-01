@@ -399,12 +399,12 @@ export default function DashboardPage() {
                     const blob = await generateBillPdfBlob(bill);
 
                     const formData = new FormData();
-                    formData.append("file", blob, `SKC_Invoice_${bill.billNumber}.pdf`);
+                    formData.append("file", blob, `Laxmi_Invoice_${bill.billNumber}.pdf`);
                     formData.append("customerName", bill.customer?.name || "Customer");
                     formData.append("mobileNumber", phone);
                     formData.append("billNumber", bill.billNumber);
                     
-                    const reminderMsg = `Hello ${bill.customer?.name || "Customer"},\nThis is Shree Krishna Computer. Your pending due of ₹${parseFloat(bill.dueAmount).toFixed(2)} from bill #${bill.billNumber} is overdue. Please settle it at your earliest convenience.`;
+                    const reminderMsg = `Hello ${bill.customer?.name || "Customer"},\nThis is Laxmi Electronics & Furnitures. Your pending due of ₹${parseFloat(bill.dueAmount).toFixed(2)} from bill #${bill.billNumber} is overdue. Please settle it at your earliest convenience.`;
                     formData.append("customMessage", reminderMsg);
 
                     const res = await fetch(`/api/v1/bills/${bill.id}/whatsapp/upload`, {

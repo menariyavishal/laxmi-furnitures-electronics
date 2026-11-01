@@ -47,7 +47,7 @@ gantt
 
 **Tasks:**
 - [ ] Create Next.js 14 project with TypeScript
-  - `npx create-next-app@latest mobile-shop --typescript --tailwind`
+  - `npx create-next-app@latest Furniture-and-Electronics --typescript --tailwind`
   - Remove boilerplate pages
   - Set up folder structure (`app/`, `components/`, `lib/`, `types/`, `hooks/`, `__tests__/`)
 

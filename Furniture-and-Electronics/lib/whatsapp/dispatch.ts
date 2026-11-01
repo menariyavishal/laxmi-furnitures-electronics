@@ -78,12 +78,9 @@ export async function attemptWhatsappDelivery(deliveryId: number, pdfBase64?: st
   let status = "sent";
   let failureReason: string | null = null;
 
-  if (settings.status !== "connected" || (process.env.NODE_ENV === "development" && settings.simulateSessionError)) {
+  if (!isBotConfigured() && settings.status !== "connected") {
     status = "failed";
-    failureReason = "Session Not Connected";
-  } else if (process.env.NODE_ENV === "development" && settings.simulateFailures && delivery.mobileNumber.endsWith("9")) {
-    status = "failed";
-    failureReason = "Customer is not available on WhatsApp";
+    failureReason = "WhatsApp service not configured or disconnected";
   } else if (delivery.mobileNumber.startsWith("000")) {
     status = "failed";
     failureReason = "Invalid Number";

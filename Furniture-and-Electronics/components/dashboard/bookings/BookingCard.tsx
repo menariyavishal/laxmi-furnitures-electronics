@@ -155,20 +155,19 @@ export default function BookingCard({
               </button>
             )}
 
-            {/* Quick Resend WhatsApp Button */}
+            {/* Quick Resend WhatsApp Button (Icon-Only) */}
             <button
               type="button"
               disabled={sendingWhatsApp}
               onClick={handleResendWhatsApp}
-              className={`inline-flex items-center justify-center h-7 px-2 text-xs font-bold rounded-md border shadow-2xs transition-colors ${
+              className={`inline-flex items-center justify-center w-7 h-7 rounded-md border shadow-2xs transition-colors shrink-0 ${
                 sendingWhatsApp
                   ? "bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse cursor-wait"
                   : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
               }`}
               title="Resend Booking Slip & Designs via WhatsApp"
             >
-              <FaWhatsapp className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="hidden sm:inline ml-1">WhatsApp</span>
+              <FaWhatsapp className="w-4 h-4 text-emerald-600" />
             </button>
 
             <span

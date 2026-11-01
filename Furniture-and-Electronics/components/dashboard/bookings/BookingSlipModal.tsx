@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { BookingResponse } from "@/types/booking";
-import { FaPrint, FaTimes, FaCamera } from "react-icons/fa";
-import { extractDesignPhotos } from "@/lib/pdf/booking-slip";
+import { FaPrint, FaTimes, FaCamera, FaSearchPlus } from "react-icons/fa";
+import { extractDesignPhotos } from "@/lib/booking-photos";
 
 interface BookingSlipModalProps {
   booking: BookingResponse | null;
@@ -17,16 +17,23 @@ export default function BookingSlipModal({
   onClose,
 }: BookingSlipModalProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-  // Close modal on Escape key press
+  // Close modal or image preview on Escape key press
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (previewImageUrl) {
+          setPreviewImageUrl(null);
+        } else {
+          onClose();
+        }
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, previewImageUrl]);
 
   if (!isOpen || !booking) return null;
 
@@ -361,29 +368,33 @@ export default function BookingSlipModal({
           {/* Attached Design References Section */}
           {designPhotos && designPhotos.length > 0 && (
             <div className="pt-2 border-t border-dashed border-gray-200">
-              <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <FaCamera className="w-3 h-3 text-blue-600" />
-                Attached Design References ({designPhotos.length})
-              </h4>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <FaCamera className="w-3 h-3 text-blue-600" />
+                  Attached Design References ({designPhotos.length})
+                </h4>
+                <span className="text-[10px] text-gray-400 font-medium">Click image to enlarge</span>
+              </div>
               <div className="grid grid-cols-3 gap-2.5">
                 {designPhotos.map((url, idx) => (
                   <div
                     key={idx}
-                    className="relative rounded-lg border border-gray-200 bg-gray-50 overflow-hidden shadow-2xs aspect-video group"
+                    onClick={() => setPreviewImageUrl(url)}
+                    className="relative rounded-lg border border-gray-200 bg-gray-50 overflow-hidden shadow-2xs aspect-video group cursor-pointer hover:border-blue-400 transition-all"
+                    title="Click to view full size"
                   >
                     <img
                       src={url}
                       alt={`Design ${idx + 1}`}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-mono font-bold"
-                    >
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-bold">
+                      <FaSearchPlus className="w-3.5 h-3.5 text-blue-300" />
+                      <span>View Full Size</span>
+                    </div>
+                    <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-mono font-bold">
                       #{idx + 1}
-                    </a>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -403,6 +414,44 @@ export default function BookingSlipModal({
           </div>
         </div>
       </div>
+
+      {/* Full-Size Design Image Lightbox Modal */}
+      {previewImageUrl && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/25 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 transition-all duration-200"
+          onClick={() => setPreviewImageUrl(null)}
+        >
+          <div
+            className="relative max-w-md sm:max-w-lg w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-200 flex flex-col animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-gray-200">
+              <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                <FaCamera className="w-3.5 h-3.5 text-blue-600" />
+                Attached Design Preview
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewImageUrl(null)}
+                className="w-7 h-7 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
+                title="Close preview (Esc)"
+              >
+                <FaTimes className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Image viewport in standard size */}
+            <div className="p-3 bg-gray-50/60 flex items-center justify-center">
+              <img
+                src={previewImageUrl}
+                alt="Design Reference Preview"
+                className="max-w-full max-h-[55vh] object-contain rounded-xl shadow-xs border border-gray-200/80 bg-white"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

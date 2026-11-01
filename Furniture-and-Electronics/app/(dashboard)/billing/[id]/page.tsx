@@ -76,7 +76,7 @@ export default function BillDetailPage({ params }: { params: Promise<{ id: strin
 
       // Upload PDF and trigger WhatsApp delivery
       const formData = new FormData();
-      formData.append("file", blob, `SKC_Invoice_${bill.billNumber}.pdf`);
+      formData.append("file", blob, `Laxmi_Invoice_${bill.billNumber}.pdf`);
       formData.append("customerName", bill.customer?.name || bill.customerName || "Customer");
       formData.append("customerAddress", bill.customer?.address || "");
       formData.append("mobileNumber", customerPhone);

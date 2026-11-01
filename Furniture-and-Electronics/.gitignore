@@ -94,3 +94,6 @@ public/uploads/
 *.db
 *.db-journal
 prisma/dev.db
+
+.whatsapp-sessions/
+whatsapp-sessions/

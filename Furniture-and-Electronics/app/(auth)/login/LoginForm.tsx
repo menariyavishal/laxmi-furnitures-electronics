@@ -34,7 +34,7 @@ export default function LoginForm() {
     <div className="max-w-md w-full space-y-8 glass-card p-10 z-10">
       <div>
         <h2 className="mt-2 text-center text-3xl font-medium text-white tracking-wide">
-          Shree Krishna Computer
+          Laxmi Electronics & Furnitures
         </h2>
         <p className="mt-3 text-center text-xs text-white/60 font-semibold uppercase tracking-widest">
           Owner: Lalit Menariya

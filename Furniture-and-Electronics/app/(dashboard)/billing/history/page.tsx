@@ -183,7 +183,7 @@ export default function BillingHistoryPage() {
       const blob = await generateBillPdfBlob(bill);
 
       const formData = new FormData();
-      formData.append("file", blob, `SKC_Invoice_${bill.billNumber}.pdf`);
+      formData.append("file", blob, `Laxmi_Invoice_${bill.billNumber}.pdf`);
       formData.append("customerName", bill.customer?.name || "Customer");
       formData.append("mobileNumber", customerPhone);
       formData.append("billNumber", bill.billNumber);

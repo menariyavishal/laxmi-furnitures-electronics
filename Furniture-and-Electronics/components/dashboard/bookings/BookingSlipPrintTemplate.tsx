@@ -1,5 +1,6 @@
 import React from "react";
 import { BookingResponse } from "@/types/booking";
+import { FaCamera } from "react-icons/fa";
 
 interface BookingSlipPrintTemplateProps {
   booking: BookingResponse;
@@ -32,6 +33,16 @@ export default function BookingSlipPrintTemplate({
 
   const isDelivered = booking.status === "COMPLETED";
 
+  // Check actual delivery date from delivery records if present
+  const deliveredRecord = booking.deliveries?.find((d) => d.actualDelivery);
+  const formattedDeliveredDate = deliveredRecord?.actualDelivery
+    ? new Date(deliveredRecord.actualDelivery).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : formattedDeliveryDate;
+
   const itemsTotal = (booking.bookingItems || []).reduce(
     (sum, item) => sum + Number(item.lineTotal || 0),
     0
@@ -46,13 +57,12 @@ export default function BookingSlipPrintTemplate({
   const furnitureBill = booking.bills?.find((b) => b.department === "FURNITURE");
   const electronicsBills = booking.bills?.filter((b) => b.department === "ELECTRONICS") || [];
 
-  const hasFurniture = booking.bookingItems?.some((i) => i.department === "FURNITURE");
-  const hasElectronics = booking.bookingItems?.some((i) => i.department === "ELECTRONICS");
-
-  // Clean notes from internal [DESIGNS] tags
-  const cleanNotes = booking.notes
-    ? booking.notes.replace(/\[DESIGNS\]:\[.*?\]/g, "").replace(/\(Discount:.*?\)/g, "").trim()
-    : "";
+  const hasFurniture = (booking.bookingItems || []).some(
+    (i) => (i.department || "FURNITURE").toUpperCase() === "FURNITURE"
+  );
+  const hasElectronics = (booking.bookingItems || []).some(
+    (i) => (i.department || "").toUpperCase() === "ELECTRONICS"
+  );
 
   return (
     <div
@@ -60,108 +70,125 @@ export default function BookingSlipPrintTemplate({
         width: "740px",
         backgroundColor: "#ffffff",
         color: "#111827",
-        fontFamily: "'Segoe UI', Arial, sans-serif",
-        fontSize: "12px",
-        padding: "24px",
-        boxSizing: "border-box",
+        fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
       }}
+      className="p-8 space-y-5 bg-white text-gray-900"
     >
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "2px solid #2563eb", paddingBottom: "12px", marginBottom: "16px" }}>
+      <div className="text-center border-b-2 border-dashed border-gray-300 pb-4">
+        <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase">
+          Laxmi Electronics & Furnitures
+        </h1>
+        <p className="text-xs text-gray-600 font-medium mt-0.5">
+          Complete Wedding Packages, Electronics & Home Furnishings
+        </p>
+        <p className="text-xs text-gray-500">Main Market, Kanore | Phone: +91 63755 91682</p>
+        {isDelivered ? (
+          <div className="mt-2.5 inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider border border-emerald-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            Delivered Package Order Slip
+          </div>
+        ) : (
+          <div className="mt-2.5 inline-block bg-blue-50 text-blue-900 px-3.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider border border-blue-200">
+            Advance Package Order Slip
+          </div>
+        )}
+      </div>
+
+      {/* Booking Meta Grid */}
+      <div className="grid grid-cols-2 gap-3 text-xs bg-gray-50 p-3.5 rounded-xl border border-gray-200">
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: "900", color: "#1e3a8a", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-            Laxmi Electronics & Furnitures
-          </h1>
-          <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "#4b5563" }}>
-            Main Market, Kanore, Udaipur (Raj.) • Helpline: +91 99282 03203
-          </p>
+          <p className="text-gray-500 text-[11px]">Booking Reference:</p>
+          <p className="font-black text-gray-900 text-sm font-mono">{booking.bookingNumber}</p>
+          <p className="text-gray-500 text-[11px] mt-1.5">Booking Date:</p>
+          <p className="font-bold text-gray-800">{formattedBookingDate}</p>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ display: "inline-block", backgroundColor: "#eff6ff", border: "1px solid #bfdbfe", padding: "4px 8px", borderRadius: "6px", fontFamily: "monospace", fontSize: "13px", fontWeight: "bold", color: "#1e3a8a" }}>
-            {booking.bookingNumber}
-          </div>
-          <p style={{ margin: "4px 0 0 0", fontSize: "10px", color: "#6b7280" }}>
-            Booked on: {formattedBookingDate}
-          </p>
-        </div>
-      </div>
-
-      {/* Target Delivery & Customer Information */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
-        <div style={{ backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "10px" }}>
-          <div style={{ fontSize: "10px", fontWeight: "bold", color: "#6b7280", textTransform: "uppercase", marginBottom: "4px" }}>
-            Customer Details
-          </div>
-          <div style={{ fontSize: "13px", fontWeight: "bold", color: "#111827" }}>
-            {booking.customer?.name || "Customer"}
-          </div>
-          <div style={{ fontSize: "11px", color: "#374151", marginTop: "2px" }}>
-            📞 {booking.customer?.phone || "—"}
-          </div>
-          {booking.customer?.address && (
-            <div style={{ fontSize: "11px", color: "#4b5563", marginTop: "2px" }}>
-              📍 {booking.customer.address}
-            </div>
+        <div>
+          {isDelivered ? (
+            <>
+              <p className="text-gray-500 text-[11px]">Delivery Status:</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  ✓ DELIVERED
+                </span>
+                <span className="text-gray-700 font-bold text-xs">{formattedDeliveredDate}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-500 text-[11px]">Target Delivery Date:</p>
+              <p className="font-extrabold text-blue-900 text-sm flex items-center gap-1.5 mt-0.5">
+                <span>🚚</span>
+                <span>{formattedDeliveryDate}</span>
+              </p>
+            </>
           )}
-        </div>
-
-        <div style={{ backgroundColor: "#eff6ff", border: "1px solid #dbeafe", borderRadius: "8px", padding: "10px" }}>
-          <div style={{ fontSize: "10px", fontWeight: "bold", color: "#1e40af", textTransform: "uppercase", marginBottom: "4px" }}>
-            Delivery Schedule
-          </div>
-          <div style={{ fontSize: "13px", fontWeight: "bold", color: "#1e3a8a" }}>
-            🚚 Target Delivery: {formattedDeliveryDate}
-          </div>
           {formattedEventDate && (
-            <div style={{ fontSize: "11px", color: "#1e40af", marginTop: "2px" }}>
-              🎉 Event Date: {formattedEventDate}
-            </div>
+            <>
+              <p className="text-gray-500 text-[11px] mt-1.5">Event Date:</p>
+              <p className="font-bold text-gray-800">{formattedEventDate}</p>
+            </>
           )}
-          <div style={{ fontSize: "11px", color: "#4b5563", marginTop: "2px" }}>
-            Order Status: <strong>{isDelivered ? "Delivered & Completed" : "Confirmed Booking"}</strong>
-          </div>
         </div>
       </div>
 
-      {/* Reserved Package Items Table */}
-      <div style={{ marginBottom: "16px" }}>
-        <div style={{ fontSize: "11px", fontWeight: "bold", color: "#4b5563", textTransform: "uppercase", marginBottom: "6px" }}>
-          Reserved Package Items ({booking.bookingItems?.length || 0})
+      {/* Customer Information */}
+      <div className="text-xs border-b border-gray-200 pb-2.5">
+        <h3 className="font-bold text-gray-500 uppercase tracking-wider text-[10px] mb-1">
+          Customer Details
+        </h3>
+        <div className="flex justify-between items-baseline">
+          <span className="font-extrabold text-sm text-gray-900">
+            {booking.customer?.name || "Customer"}
+          </span>
+          <span className="font-mono text-gray-700 font-semibold">
+            {booking.customer?.phone || "—"}
+          </span>
         </div>
-        <table style={{ width: "100%", borderCollapse: "collapse", border: "1px solid #e5e7eb", fontSize: "11px" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#f3f4f6", color: "#374151" }}>
-              <th style={{ padding: "6px 8px", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>#</th>
-              <th style={{ padding: "6px 8px", textAlign: "left", borderBottom: "1px solid #e5e7eb" }}>Item Description</th>
-              <th style={{ padding: "6px 8px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Dept</th>
-              <th style={{ padding: "6px 8px", textAlign: "center", borderBottom: "1px solid #e5e7eb" }}>Qty</th>
-              <th style={{ padding: "6px 8px", textAlign: "right", borderBottom: "1px solid #e5e7eb" }}>Rate (₹)</th>
-              <th style={{ padding: "6px 8px", textAlign: "right", borderBottom: "1px solid #e5e7eb" }}>Line Total (₹)</th>
+        {booking.customer?.address && (
+          <p className="text-gray-600 mt-0.5">{booking.customer.address}</p>
+        )}
+      </div>
+
+      {/* Reserved Items Table */}
+      <div>
+        <h3 className="font-bold text-gray-500 uppercase tracking-wider text-[10px] mb-1.5">
+          Reserved Package Items ({(booking.bookingItems || []).length})
+        </h3>
+        <table className="w-full text-xs border border-gray-200 rounded-lg overflow-hidden">
+          <thead className="bg-gray-100 text-gray-700">
+            <tr>
+              <th className="py-1.5 px-3 text-left">Item Description</th>
+              <th className="py-1.5 px-3 text-center">Dept</th>
+              <th className="py-1.5 px-3 text-center">Qty</th>
+              <th className="py-1.5 px-3 text-right">Rate</th>
+              <th className="py-1.5 px-3 text-right">Total</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
             {(booking.bookingItems || []).map((item, idx) => (
-              <tr key={idx} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                <td style={{ padding: "6px 8px", color: "#6b7280" }}>{idx + 1}</td>
-                <td style={{ padding: "6px 8px" }}>
-                  <div style={{ fontWeight: "bold", color: "#111827" }}>{item.product?.name || "Product"}</div>
+              <tr key={idx} className="hover:bg-gray-50">
+                <td className="py-1.5 px-3 text-left">
+                  <div className="font-semibold text-gray-900">
+                    {item.product?.name || "Package Item"}
+                  </div>
                   {item.customisations && (
-                    <div style={{ fontSize: "10px", color: "#4b5563", fontStyle: "italic", marginTop: "2px" }}>
-                      Specs: {item.customisations}
+                    <div className="text-[10px] text-gray-500 font-normal italic mt-0.5 whitespace-pre-line leading-tight">
+                      {item.customisations}
                     </div>
                   )}
                 </td>
-                <td style={{ padding: "6px 8px", textAlign: "center" }}>
-                  <span style={{ fontSize: "9px", fontWeight: "bold", padding: "2px 5px", borderRadius: "4px", backgroundColor: item.department === "ELECTRONICS" ? "#f3e8ff" : "#fef3c7", color: item.department === "ELECTRONICS" ? "#6b21a8" : "#92400e" }}>
+                <td className="py-1.5 px-3 text-center">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100">
                     {item.department === "ELECTRONICS" ? "ELEC" : "FURN"}
                   </span>
                 </td>
-                <td style={{ padding: "6px 8px", textAlign: "center", fontWeight: "bold" }}>{item.quantity}</td>
-                <td style={{ padding: "6px 8px", textAlign: "right" }}>
-                  {Number(item.unitPrice).toLocaleString("en-IN")}
+                <td className="py-1.5 px-3 text-center font-bold">{item.quantity}</td>
+                <td className="py-1.5 px-3 text-right">
+                  ₹{Number(item.unitPrice).toLocaleString("en-IN")}
                 </td>
-                <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "bold" }}>
-                  {Number(item.lineTotal).toLocaleString("en-IN")}
+                <td className="py-1.5 px-3 text-right font-bold">
+                  ₹{Number(item.lineTotal).toLocaleString("en-IN")}
                 </td>
               </tr>
             ))}
@@ -169,113 +196,143 @@ export default function BookingSlipPrintTemplate({
         </table>
       </div>
 
-      {/* Financial Summary & Invoices */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
-        <div style={{ backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "10px" }}>
-          <div style={{ fontSize: "10px", fontWeight: "bold", color: "#6b7280", textTransform: "uppercase", marginBottom: "4px" }}>
+      {/* Financials & Invoices Grid */}
+      <div className="grid grid-cols-2 gap-3 text-xs pt-1">
+        {/* Linked Invoices */}
+        <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-1.5">
+          <h4 className="font-bold text-gray-500 uppercase text-[10px] tracking-wider">
             Linked Tax Invoices
-          </div>
-          <div style={{ fontSize: "11px", marginBottom: "4px" }}>
-            Furniture Invoice:{" "}
-            {hasFurniture ? (
-              <strong style={{ color: "#065f46" }}>{furnitureBill ? furnitureBill.billNumber : "Generated on Booking"}</strong>
-            ) : (
-              <span style={{ color: "#9ca3af" }}>—</span>
-            )}
-          </div>
-          <div style={{ fontSize: "11px" }}>
-            Electronics Invoice(s):{" "}
-            {hasElectronics ? (
-              electronicsBills.length > 0 ? (
-                <strong style={{ color: "#581c87" }}>{electronicsBills.map((b) => b.billNumber).join(", ")}</strong>
+          </h4>
+          <div className="text-[11px] space-y-1">
+            <div>
+              <span className="text-gray-500">Furniture Bill: </span>
+              {hasFurniture ? (
+                <span className="font-bold text-emerald-800">
+                  {furnitureBill ? furnitureBill.billNumber : "Pending Generation"}
+                </span>
               ) : (
-                <span style={{ color: "#92400e" }}>Generated on Delivery</span>
-              )
-            ) : (
-              <span style={{ color: "#9ca3af" }}>—</span>
-            )}
-          </div>
-          {cleanNotes && (
-            <div style={{ marginTop: "8px", fontSize: "10px", color: "#4b5563" }}>
-              <strong>Notes:</strong> {cleanNotes}
+                <span className="font-bold text-gray-400">— (Not in Package)</span>
+              )}
             </div>
-          )}
+            <div>
+              <span className="text-gray-500">Electronics Bill(s): </span>
+              {!hasElectronics ? (
+                <span className="font-bold text-gray-400">— (Not in Package)</span>
+              ) : electronicsBills.length > 0 ? (
+                <span className="font-bold text-purple-800">
+                  {electronicsBills.map((b) => b.billNumber).join(", ")}
+                </span>
+              ) : isDelivered ? (
+                <span className="font-bold text-emerald-700">Fulfilled on Delivery</span>
+              ) : (
+                <span className="font-bold text-amber-800">Pending Delivery</span>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div style={{ backgroundColor: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: "10px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "11px" }}>
-            <span style={{ color: "#4b5563" }}>Total Package Value:</span>
-            <strong>₹{(itemsTotal > 0 ? itemsTotal : total).toLocaleString("en-IN")}</strong>
+        {/* Totals */}
+        <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-200 space-y-1 text-right">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Total Package Value:</span>
+            <span className="font-bold text-gray-900">
+              ₹{(itemsTotal > 0 ? itemsTotal : total).toLocaleString("en-IN")}
+            </span>
           </div>
           {discount > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "11px", color: "#e11d48" }}>
-              <span>Package Discount:</span>
+            <div className="flex justify-between text-rose-600 font-semibold">
+              <span>Discount Applied:</span>
               <span>-₹{discount.toLocaleString("en-IN")}</span>
             </div>
           )}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "11px", color: "#047857" }}>
-            <span>Advance Received:</span>
-            <strong>₹{advance.toLocaleString("en-IN")}</strong>
+          {discount > 0 && (
+            <div className="flex justify-between text-gray-700 font-semibold border-t border-blue-100 pt-0.5">
+              <span>Net Order Total:</span>
+              <span className="font-bold text-gray-900">₹{total.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-emerald-700">
+            <span className="font-semibold">Advance Received:</span>
+            <span className="font-bold">₹{advance.toLocaleString("en-IN")}</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #bfdbfe", paddingTop: "4px", marginTop: "4px", fontSize: "13px", fontWeight: "900", color: balance <= 0 ? "#047857" : "#1e3a8a" }}>
-            <span>{isDelivered ? "Balance Remaining:" : "Balance Due on Delivery:"}</span>
-            <span>{balance <= 0 ? "₹0 (Fully Settled)" : `₹${balance.toLocaleString("en-IN")}`}</span>
+          <div className="border-t border-blue-200 pt-1 flex justify-between text-xs sm:text-sm">
+            <span className="font-extrabold text-gray-900">
+              {isDelivered ? "Balance Remaining:" : "Balance Due on Delivery:"}
+            </span>
+            <span
+              className={`font-extrabold ${
+                balance <= 0 ? "text-emerald-700" : "text-blue-950"
+              }`}
+            >
+              {balance <= 0 ? "₹0 (Fully Settled)" : `₹${balance.toLocaleString("en-IN")}`}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Embedded Attached Design References Section */}
-      {designPhotos && designPhotos.length > 0 && (
-        <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "2px dashed #cbd5e1" }}>
-          <div style={{ fontSize: "11px", fontWeight: "bold", color: "#1e3a8a", textTransform: "uppercase", marginBottom: "8px" }}>
-            📷 Attached Design References & Customization Photos ({designPhotos.length})
+      {/* Delivered Verification Seal / Stamp */}
+      {isDelivered && (
+        <div className="border border-emerald-300 bg-emerald-50/70 rounded-xl px-4 py-2.5 flex items-center justify-between text-emerald-950">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-black">
+              ✓
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-emerald-900">
+                Order Delivered & Fulfilled
+              </p>
+              <p className="text-[11px] text-emerald-700 font-medium">
+                Package items inspected and handed over to customer.
+              </p>
+            </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
-            {designPhotos.map((photoUrl, idx) => (
+          <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-md bg-emerald-200 text-emerald-900 border border-emerald-300">
+            Status: Completed
+          </span>
+        </div>
+      )}
+
+      {/* Attached Design References Section */}
+      {designPhotos && designPhotos.length > 0 && (
+        <div className="pt-2 border-t border-dashed border-gray-200">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+              <FaCamera className="w-3 h-3 text-blue-600" />
+              Attached Design References ({designPhotos.length})
+            </h4>
+          </div>
+          <div className="grid grid-cols-3 gap-2.5">
+            {designPhotos.map((url, idx) => (
               <div
                 key={idx}
-                style={{
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "6px",
-                  overflow: "hidden",
-                  backgroundColor: "#f8fafc",
-                  padding: "4px",
-                  textAlign: "center",
-                }}
+                className="relative rounded-lg border border-gray-200 bg-gray-50 overflow-hidden shadow-2xs aspect-video"
               >
                 <img
-                  src={photoUrl}
+                  src={url}
                   alt={`Design ${idx + 1}`}
                   crossOrigin="anonymous"
-                  style={{
-                    width: "100%",
-                    height: "140px",
-                    objectFit: "cover",
-                    borderRadius: "4px",
-                    display: "block",
-                  }}
+                  className="w-full h-full object-cover"
                 />
-                <div style={{ fontSize: "10px", color: "#64748b", marginTop: "4px", fontWeight: "bold" }}>
-                  Design Spec #{idx + 1}
-                </div>
+                <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-mono font-bold">
+                  #{idx + 1}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Signature Footer */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "24px", paddingTop: "16px", borderTop: "1px solid #e5e7eb", fontSize: "11px", color: "#6b7280" }}>
+      {/* Signatures & Footer */}
+      <div className="pt-6 border-t border-gray-300 flex justify-between items-end text-xs text-gray-500">
         <div>
-          <div style={{ fontWeight: "bold", color: "#374151" }}>Customer Signature</div>
-          <div style={{ width: "140px", borderBottom: "1px solid #9ca3af", marginTop: "25px" }} />
+          <p className="font-bold text-gray-700">Customer Signature</p>
+          <div className="w-32 border-b border-gray-400 mt-5" />
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontWeight: "bold", color: "#374151" }}>For Laxmi Electronics & Furnitures</div>
-          <div style={{ width: "160px", borderBottom: "1px solid #9ca3af", marginTop: "25px", marginLeft: "auto" }} />
+        <div className="text-right">
+          <p className="font-bold text-gray-700">For Laxmi Electronics & Furnitures</p>
+          <div className="w-40 border-b border-gray-400 mt-5 ml-auto" />
         </div>
       </div>
     </div>
   );
 }
-

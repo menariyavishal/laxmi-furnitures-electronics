@@ -122,7 +122,7 @@ These are flagged so they can be prioritized in a Phase 2 discussion once the co
 
 - Clean, minimal layout — no clutter, no unnecessary steps.
 - Plain language labels ("Add Stock", "New Bill", "This Month's Sales") instead of technical terms.
-- Mobile-shop-relevant visual hierarchy: category → product → action, always in that order.
+- Electronics and Furniture store visual hierarchy: category → product → action, always in that order.
 - Color used sparingly and meaningfully (e.g. red badge for low stock, green for in-stock).
 - Confirmation prompts only for irreversible actions (e.g. voiding a bill), not for routine ones.
 

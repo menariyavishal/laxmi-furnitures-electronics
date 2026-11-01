@@ -20,7 +20,7 @@ This project is organized around **business domains**, not technical layers. Eac
 ## 2. Folder Structure (Detailed)
 
 ```
-mobile-shop/
+Furniture-and-Electronics/
 │
 ├── prisma/
 │   ├── schema.prisma              # Single source of truth for data model

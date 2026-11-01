@@ -75,7 +75,7 @@ REST JSON endpoints under `/api/v1/`. Each route is a file in the `app/api/v1/` 
 This structure separates concerns by domain (Auth, Products, Bills, Analytics) while keeping frontend and backend together in one Next.js project.
 
 ```
-mobile-shop/
+Furniture-and-Electronics/
 ├── .env.local                 # Environment variables (DB URL, NextAuth secret)
 ├── prisma/
 │   ├── schema.prisma          # Database schema (Prisma models)

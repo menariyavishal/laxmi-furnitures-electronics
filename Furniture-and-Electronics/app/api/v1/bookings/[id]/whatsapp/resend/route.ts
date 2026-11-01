@@ -7,7 +7,7 @@ import {
   formatBookingNewMessage,
   formatBookingSlipCopyMessage,
 } from "@/lib/whatsapp/templates";
-import { extractDesignPhotos } from "@/lib/pdf/booking-slip";
+import { extractDesignPhotos } from "@/lib/booking-photos";
 
 export async function POST(
   req: Request,

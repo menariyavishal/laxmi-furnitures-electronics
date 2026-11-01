@@ -8,12 +8,20 @@
 import { WhatsAppSendOptions } from "./types";
 
 export function isBotConfigured(): boolean {
+  // In local development, return true if either local daemon (port 3001) or remote bot is used
+  if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
+    return true;
+  }
   return !!(process.env.WHATSAPP_BOT_URL && process.env.WHATSAPP_API_KEY);
 }
 
 function getNormalizedBotUrl(): string {
   let url = process.env.WHATSAPP_BOT_URL || "";
   if (!url) {
+    // In local development, automatically point to local daemon on port 3001
+    if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
+      return "http://localhost:3001";
+    }
     throw new Error("WHATSAPP_BOT_URL environment variable is not configured");
   }
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -24,9 +32,10 @@ function getNormalizedBotUrl(): string {
 
 async function botFetch(endpoint: string, options: RequestInit = {}) {
   const botUrl = getNormalizedBotUrl();
-  const apiKey = process.env.WHATSAPP_API_KEY;
+  const isLocal = botUrl.includes("localhost") || botUrl.includes("127.0.0.1");
+  const apiKey = process.env.WHATSAPP_API_KEY || (isLocal ? "local-dev-key" : "");
 
-  if (!apiKey) {
+  if (!apiKey && !isLocal) {
     throw new Error("WHATSAPP_API_KEY environment variable is not configured");
   }
 
@@ -41,7 +50,7 @@ async function botFetch(endpoint: string, options: RequestInit = {}) {
       cache: "no-store",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
+        ...(apiKey ? { "x-api-key": apiKey } : {}),
         ...(options.headers || {}),
       },
     });
@@ -55,6 +64,16 @@ async function botFetch(endpoint: string, options: RequestInit = {}) {
   } catch (err: any) {
     if (err.name === "AbortError") {
       throw new Error(`WhatsApp request timed out after ${timeoutMs}ms`);
+    }
+    if (
+      err.cause?.code === "ECONNREFUSED" ||
+      err.code === "ECONNREFUSED" ||
+      err.message?.includes("ECONNREFUSED") ||
+      err.message?.includes("fetch failed")
+    ) {
+      throw new Error(
+        `Local WhatsApp daemon is not running at ${botUrl}. Please run "npm run whatsapp:local" in a separate terminal to start it.`
+      );
     }
     throw err;
   } finally {

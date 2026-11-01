@@ -1,25 +1,17 @@
+"use client";
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 import BookingSlipPrintTemplate from "@/components/dashboard/bookings/BookingSlipPrintTemplate";
 import { BookingResponse } from "@/types/booking";
+import { extractDesignPhotos } from "@/lib/booking-photos";
 
-/**
- * Helper to extract design photos array from booking notes
- */
-export function extractDesignPhotos(notes?: string | null): string[] {
-  if (!notes) return [];
-  const match = notes.match(/\[DESIGNS\]:(.*?)(?:\n|$)/);
-  if (!match) return [];
-  try {
-    const parsed = JSON.parse(match[1]);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
+// Re-export for backward-compatibility in client components
+export { extractDesignPhotos };
 
 /**
  * Generate a PDF Blob for the Booking Slip (including embedded design photos)
+ * (Client-side execution only)
  */
 export async function generateBookingSlipPdfBlob(
   booking: BookingResponse,
@@ -104,4 +96,3 @@ export async function generateBookingSlipPdfBlob(
 
   return pdf.output("blob");
 }
-

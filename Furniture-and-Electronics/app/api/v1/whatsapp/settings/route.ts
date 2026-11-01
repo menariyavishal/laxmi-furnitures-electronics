@@ -49,9 +49,17 @@ export async function POST(req: Request) {
 
     // Trigger daemon lifecycle based on requested status
     if (status === "connecting") {
-      // In production, tell the Railway bot to connect
+      // In production or local development, tell the bot daemon to connect
       if (isBotConfigured()) {
-        await botConnect();
+        try {
+          await botConnect();
+        } catch (botErr: any) {
+          console.error("Failed to connect WhatsApp bot:", botErr.message);
+          return NextResponse.json(
+            { error: botErr.message || "Failed to initiate WhatsApp bot connection" },
+            { status: 502 }
+          );
+        }
         // Return current settings (frontend will poll for QR via GET)
         const updated = await getWhatsappSettings();
         return NextResponse.json(updated);

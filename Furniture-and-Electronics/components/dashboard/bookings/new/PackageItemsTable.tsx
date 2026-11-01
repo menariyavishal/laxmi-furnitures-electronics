@@ -50,21 +50,24 @@ export default function PackageItemsTable({
   // Index of item currently expanded for configuration
   const [activeConfigIndex, setActiveConfigIndex] = useState<number | null>(null);
 
-  // Handle photo attachment (desktop file selector / mobile camera & gallery)
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle photo attachment (desktop file selector / mobile camera & gallery) with automatic compression
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const { compressImage } = await import("@/lib/image-compression");
     const newPhotos: Array<{ id: string; url: string; name: string; file?: File }> = [];
-    Array.from(files).forEach((file) => {
-      const url = URL.createObjectURL(file);
+
+    for (const file of Array.from(files)) {
+      const compressed = await compressImage(file, 1600, 1600, 0.82);
+      const url = URL.createObjectURL(compressed);
       newPhotos.push({
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         url,
-        name: file.name,
-        file,
+        name: compressed.name,
+        file: compressed,
       });
-    });
+    }
 
     if (onPhotosChange) {
       onPhotosChange([...attachedPhotos, ...newPhotos]);

@@ -355,9 +355,40 @@ export async function POST(req: Request) {
           },
         });
 
+        // 7. Fetch full booking with relations for immediate client-side PDF & WhatsApp dispatch
+        const fullBooking = await tx.booking.findUnique({
+          where: { id: newBooking.id },
+          include: {
+            customer: true,
+            bookingItems: {
+              include: {
+                product: true,
+              },
+            },
+            bills: true,
+            deliveries: true,
+          },
+        });
+
+        let fullFurnitureBill = null;
+        if (createdFurnitureBill) {
+          fullFurnitureBill = await tx.bill.findUnique({
+            where: { id: createdFurnitureBill.id },
+            include: {
+              customer: true,
+              billItems: {
+                include: {
+                  product: true,
+                },
+              },
+              booking: true,
+            },
+          });
+        }
+
         return {
-          ...newBooking,
-          furnitureBill: createdFurnitureBill,
+          ...fullBooking,
+          furnitureBill: fullFurnitureBill,
         };
       },
       {
