@@ -42,111 +42,123 @@ export async function POST(
 
     const currentUserId = parseInt((session.user as any)?.id) || 1;
 
-    // 2. Execute stock reception transaction
-    const updatedPurchase = await prisma.$transaction(async (tx) => {
-      // Find default category fallback if custom item needs a product record
-      const defaultCategory = await tx.category.findFirst({
-        where: { department: purchase.department },
-      });
-      const categoryId = defaultCategory ? defaultCategory.id : 1;
+    // Find default category fallback if custom item needs a product record
+    const defaultCategory = await prisma.category.findFirst({
+      where: { department: purchase.department },
+    });
+    const categoryId = defaultCategory ? defaultCategory.id : 1;
 
-      for (const item of purchase.items) {
-        let targetProductId = item.productId;
+    // 2. Execute stock reception transaction with increased timeout for cloud DB latency
+    await prisma.$transaction(
+      async (tx) => {
+        for (const item of purchase.items) {
+          let targetProductId = item.productId;
 
-        // If no product is linked yet, create a new product or link to an existing matching name
-        if (!targetProductId) {
-          const existingProduct = await tx.product.findFirst({
-            where: {
-              name: { equals: item.itemName, mode: "insensitive" },
-              department: purchase.department,
+          // If no product is linked yet, create a new product or link to an existing matching name
+          if (!targetProductId) {
+            const existingProduct = await tx.product.findFirst({
+              where: {
+                name: { equals: item.itemName, mode: "insensitive" },
+                department: purchase.department,
+              },
+            });
+
+            if (existingProduct) {
+              targetProductId = existingProduct.id;
+            } else {
+              const newProd = await tx.product.create({
+                data: {
+                  name: item.itemName.trim(),
+                  categoryId,
+                  department: purchase.department,
+                  productType: purchase.department === "ELECTRONICS" ? "electronics" : "quantity",
+                  costPrice: Number(item.unitCostPrice),
+                  sellingPrice: Number(item.unitCostPrice) * 1.25,
+                  warrantyMonths: item.warrantyMonths || (purchase.department === "ELECTRONICS" ? 12 : null),
+                  quantityInStock: 0,
+                  isActive: true,
+                },
+              });
+              targetProductId = newProd.id;
+            }
+
+            // Link the purchase item to the product
+            await tx.purchaseItem.update({
+              where: { id: item.id },
+              data: { productId: targetProductId },
+            });
+          }
+
+          // Increment inventory stock and update cost price with latest purchase rate
+          await tx.product.update({
+            where: { id: targetProductId },
+            data: {
+              quantityInStock: { increment: item.quantity },
+              costPrice: Number(item.unitCostPrice),
+              ...(item.warrantyMonths ? { warrantyMonths: item.warrantyMonths } : {}),
             },
           });
 
-          if (existingProduct) {
-            targetProductId = existingProduct.id;
-          } else {
-            const newProd = await tx.product.create({
-              data: {
-                name: item.itemName.trim(),
-                categoryId,
-                department: purchase.department,
-                productType: purchase.department === "ELECTRONICS" ? "electronics" : "quantity",
-                costPrice: Number(item.unitCostPrice),
-                sellingPrice: Number(item.unitCostPrice) * 1.25,
-                warrantyMonths: item.warrantyMonths || (purchase.department === "ELECTRONICS" ? 12 : null),
-                quantityInStock: 0,
-                isActive: true,
-              },
-            });
-            targetProductId = newProd.id;
-          }
-
-          // Link the purchase item to the product
-          await tx.purchaseItem.update({
-            where: { id: item.id },
-            data: { productId: targetProductId },
+          // Create StockInRecord audit entry
+          await tx.stockInRecord.create({
+            data: {
+              productId: targetProductId,
+              quantityAdded: item.quantity,
+              costPrice: Number(item.unitCostPrice),
+              addedByUserId: currentUserId,
+              purchaseId: purchase.id,
+            },
           });
-        }
 
-        // Increment inventory stock and update cost price with latest purchase rate
-        await tx.product.update({
-          where: { id: targetProductId },
-          data: {
-            quantityInStock: { increment: item.quantity },
-            costPrice: Number(item.unitCostPrice),
-            ...(item.warrantyMonths ? { warrantyMonths: item.warrantyMonths } : {}),
-          },
-        });
+          // Handle serialized units if provided
+          if (item.serialNumbers) {
+            const serials = item.serialNumbers
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
 
-        // Create StockInRecord audit entry
-        await tx.stockInRecord.create({
-          data: {
-            productId: targetProductId,
-            quantityAdded: item.quantity,
-            costPrice: Number(item.unitCostPrice),
-            addedByUserId: currentUserId,
-          },
-        });
-
-        // Handle serialized units if provided
-        if (item.serialNumbers) {
-          const serials = item.serialNumbers
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
-
-          for (const sn of serials) {
-            const existingUnit = await tx.productUnit.findUnique({
-              where: { imeiNumber: sn },
-            });
-            if (!existingUnit) {
-              await tx.productUnit.create({
-                data: {
-                  productId: targetProductId,
-                  imeiNumber: sn,
-                  status: "in_stock",
-                  costPrice: Number(item.unitCostPrice),
-                },
+            for (const sn of serials) {
+              const existingUnit = await tx.productUnit.findUnique({
+                where: { imeiNumber: sn },
               });
+              if (!existingUnit) {
+                await tx.productUnit.create({
+                  data: {
+                    productId: targetProductId,
+                    imeiNumber: sn,
+                    status: "in_stock",
+                    costPrice: Number(item.unitCostPrice),
+                  },
+                });
+              }
             }
           }
         }
-      }
 
-      // Mark purchase as stock added
-      return await tx.purchase.update({
-        where: { id: purchaseId },
-        data: { isStockAdded: true },
-        include: {
-          vendor: true,
-          items: {
-            include: {
-              product: true,
-            },
+        // Mark purchase as stock added
+        await tx.purchase.update({
+          where: { id: purchaseId },
+          data: { isStockAdded: true },
+        });
+      },
+      {
+        maxWait: 15000, // 15 seconds to acquire a connection from pool
+        timeout: 30000, // 30 seconds execution window for remote cloud latency
+      }
+    );
+
+    // 3. Hydrate relations cleanly outside the transaction
+    const updatedPurchase = await prisma.purchase.findUnique({
+      where: { id: purchaseId },
+      include: {
+        vendor: true,
+        items: {
+          include: {
+            product: true,
           },
-          payments: true,
         },
-      });
+        payments: true,
+      },
     });
 
     return NextResponse.json({

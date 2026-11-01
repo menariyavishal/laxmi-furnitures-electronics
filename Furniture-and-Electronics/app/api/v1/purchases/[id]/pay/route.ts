@@ -82,6 +82,43 @@ export async function POST(
       return { paymentRecord, updatedPurchase };
     });
 
+    // Auto-dispatch WhatsApp Payment Advice to Vendor / Supplier
+    const vendorPhone = result.updatedPurchase.vendor?.phone;
+    if (vendorPhone) {
+      try {
+        const { dispatchWhatsappNotification } = await import("@/lib/whatsapp/dispatch");
+        const { formatVendorPaymentMessage } = await import("@/lib/whatsapp/templates");
+
+        const isFullySettled = newDue === 0;
+        const vendorMsg = formatVendorPaymentMessage({
+          vendorName: result.updatedPurchase.vendor.name,
+          purchaseNumber: result.updatedPurchase.purchaseNumber,
+          amountPaid: actualPayment,
+          paymentMode,
+          transactionRef: transactionRef?.trim() || null,
+          paymentDate: new Date().toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          }),
+          totalAmount: Number(result.updatedPurchase.totalAmount),
+          paidAmount: Number(result.updatedPurchase.paidAmount),
+          dueAmount: Number(result.updatedPurchase.dueAmount),
+          isFullySettled,
+        });
+
+        await dispatchWhatsappNotification({
+          phone: vendorPhone,
+          text: vendorMsg,
+          billNumber: result.updatedPurchase.purchaseNumber,
+          customerName: result.updatedPurchase.vendor.name,
+          isVendor: true,
+        });
+      } catch (waErr) {
+        console.error("Failed to dispatch vendor payment WhatsApp message:", waErr);
+      }
+    }
+
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     console.error("Error settling purchase installment:", error);

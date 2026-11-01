@@ -78,6 +78,11 @@ export default function NewPurchaseModal({
       ]);
       setCatalogProducts(prodsRes.items || []);
       setCategories(catsRes || []);
+      if (catsRes && catsRes.length > 0) {
+        setItems((prev) =>
+          prev.map((it) => (!it.categoryId ? { ...it, categoryId: catsRes[0].id } : it))
+        );
+      }
     } catch (err) {
       console.error("Failed to load catalog helper data:", err);
     }
@@ -93,6 +98,7 @@ export default function NewPurchaseModal({
         quantity: 1,
         unitCostPrice: "",
         lineTotal: 0,
+        categoryId: categories.length > 0 ? categories[0].id : undefined,
         warrantyMonths: department === "ELECTRONICS" ? 12 : undefined,
       },
     ]);
@@ -130,6 +136,7 @@ export default function NewPurchaseModal({
           unitCostPrice: "",
           quantity: 1,
           lineTotal: 0,
+          categoryId: categories.length > 0 ? categories[0].id : undefined,
           warrantyMonths: department === "ELECTRONICS" ? 12 : undefined,
         };
       } else {
@@ -142,6 +149,7 @@ export default function NewPurchaseModal({
           unitCostPrice: cost > 0 ? cost : "",
           quantity: qty,
           lineTotal: qty * cost,
+          categoryId: product.categoryId || (categories.length > 0 ? categories[0].id : undefined),
           warrantyMonths: product.warrantyMonths || (department === "ELECTRONICS" ? 12 : undefined),
         };
       }
@@ -184,6 +192,7 @@ export default function NewPurchaseModal({
       ...i,
       quantity: parseInt(String(i.quantity)) || 1,
       unitCostPrice: parseFloat(String(i.unitCostPrice)) || 0,
+      categoryId: i.categoryId ? parseInt(String(i.categoryId)) : undefined,
       warrantyMonths: i.warrantyMonths ? parseInt(String(i.warrantyMonths)) : undefined,
     }));
 
@@ -399,7 +408,8 @@ export default function NewPurchaseModal({
                 <thead className="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold border-b border-gray-200">
                   <tr>
                     <th className="py-2.5 px-3 min-w-[190px]">Catalog Link (Optional)</th>
-                    <th className="py-2.5 px-3 min-w-[180px]">Item Name *</th>
+                    <th className="py-2.5 px-3 min-w-[170px]">Item Name *</th>
+                    <th className="py-2.5 px-3 min-w-[130px]">Category *</th>
                     <th className="py-2.5 px-3 w-28">Cost/Unit (₹)</th>
                     <th className="py-2.5 px-3 w-20">Qty</th>
                     {department === "ELECTRONICS" && (
@@ -433,6 +443,22 @@ export default function NewPurchaseModal({
                           onChange={(e) => handleItemChange(idx, "itemName", e.target.value)}
                           className="w-full py-1.5 px-2.5 border border-gray-300 rounded text-xs font-medium"
                         />
+                      </td>
+
+                      {/* Category Selection */}
+                      <td className="py-2 px-3">
+                        <select
+                          value={item.categoryId || ""}
+                          onChange={(e) => handleItemChange(idx, "categoryId", e.target.value)}
+                          className="w-full py-1.5 px-2 border border-gray-300 rounded text-xs bg-white text-gray-800 font-medium focus:ring-1 focus:ring-blue-500"
+                        >
+                          <option value="">-- Category --</option>
+                          {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
                       </td>
 
                       {/* Unit Cost with placeholder '0' */}
@@ -624,6 +650,7 @@ export default function NewPurchaseModal({
         submitting={submitting}
         items={items}
         catalogProducts={catalogProducts}
+        categories={categories}
         department={department}
       />
     </div>

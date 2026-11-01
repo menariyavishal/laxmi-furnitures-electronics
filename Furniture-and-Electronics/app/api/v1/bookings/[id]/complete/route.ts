@@ -22,7 +22,13 @@ export async function POST(
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
       include: {
-        bookingItems: true,
+        customer: true,
+        bookingItems: {
+          include: {
+            product: true,
+          },
+        },
+        bills: true,
       },
     });
 
@@ -38,6 +44,7 @@ export async function POST(
         where: { id: bookingId },
         data: {
           status: "COMPLETED",
+          remainingBalance: 0,
         },
       });
 
@@ -51,6 +58,30 @@ export async function POST(
 
       return completed;
     });
+
+    // Auto-dispatch Settlement WhatsApp Message to Customer
+    if (booking.customer?.phone) {
+      try {
+        const { dispatchWhatsappNotification } = await import("@/lib/whatsapp/dispatch");
+        const { formatBookingSettledMessage } = await import("@/lib/whatsapp/templates");
+
+        const customerName = booking.customer?.name || "Valued Customer";
+        const settledMsg = formatBookingSettledMessage({
+          customerName,
+          bookingNumber: booking.bookingNumber,
+          totalAmount: Number(booking.totalEstimatedAmount),
+        });
+
+        await dispatchWhatsappNotification({
+          phone: booking.customer.phone,
+          text: settledMsg,
+          billNumber: booking.bookingNumber,
+          customerName,
+        });
+      } catch (waErr) {
+        console.error("Failed to dispatch booking settlement WhatsApp message:", waErr);
+      }
+    }
 
     return NextResponse.json({ success: true, booking: updatedBooking });
   } catch (error: any) {

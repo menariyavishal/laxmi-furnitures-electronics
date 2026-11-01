@@ -24,7 +24,7 @@ export default function NewBookingPage() {
 
   const [items, setItems] = useState<PackageItem[]>([]);
   const [attachedPhotos, setAttachedPhotos] = useState<
-    Array<{ id: string; url: string; name: string }>
+    Array<{ id: string; url: string; name: string; file?: File }>
   >([]);
   const [advancePaid, setAdvancePaid] = useState<number>(0);
   const [discount, setDiscount] = useState<number>(0);
@@ -114,7 +114,32 @@ export default function NewBookingPage() {
 
     setSubmitting(true);
     try {
-      await createBooking({
+      // 1. Upload attached design photos to Supabase Storage if present
+      const uploadedDesignUrls: string[] = [];
+      for (const photo of attachedPhotos) {
+        if (photo.file) {
+          try {
+            const uploadFormData = new FormData();
+            uploadFormData.append("file", photo.file);
+            uploadFormData.append("bookingNumber", "DRAFT");
+            const upRes = await fetch("/api/v1/bookings/upload-design", {
+              method: "POST",
+              body: uploadFormData,
+            });
+            if (upRes.ok) {
+              const upJson = await upRes.json();
+              if (upJson.publicUrl) {
+                uploadedDesignUrls.push(upJson.publicUrl);
+              }
+            }
+          } catch (upErr) {
+            console.error("Failed to upload design photo:", upErr);
+          }
+        }
+      }
+
+      // 2. Create Master Booking with linked design photo URLs
+      const createdBooking = await createBooking({
         customerName: formData.customerName,
         customerPhone: formData.customerPhone,
         customerAddress: formData.customerAddress,
@@ -124,6 +149,7 @@ export default function NewBookingPage() {
         advancePaid,
         discount,
         notes: formData.notes || undefined,
+        designPhotos: uploadedDesignUrls,
         items: items.map((i) => {
           const effectivePrice = getItemEffectivePrice(i);
           return {
@@ -137,6 +163,50 @@ export default function NewBookingPage() {
           };
         }),
       });
+
+      // 3. Trigger WhatsApp Delivery for Booking Slip + Furniture Invoice (if customer phone exists)
+      if (formData.customerPhone && createdBooking?.id) {
+        try {
+          const { generateBookingSlipPdfBlob } = await import("@/lib/pdf/booking-slip");
+          const slipBlob = await generateBookingSlipPdfBlob(createdBooking as any, uploadedDesignUrls);
+          const reader = new FileReader();
+          reader.readAsDataURL(slipBlob);
+          reader.onloadend = async () => {
+            const base64data = (reader.result as string)?.split(",")[1];
+            fetch(`/api/v1/bookings/${createdBooking.id}/whatsapp/resend`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                pdfBase64: base64data,
+                isNewBooking: true,
+              }),
+            }).catch((waErr) => console.error("WhatsApp booking dispatch failed:", waErr));
+          };
+        } catch (slipErr) {
+          console.error("Failed to generate booking slip PDF for WhatsApp:", slipErr);
+        }
+
+        // Also auto-dispatch Furniture Tax Invoice if one was generated
+        const furnitureBill = (createdBooking as any).furnitureBill;
+        if (furnitureBill) {
+          try {
+            const { generateBillPdfBlob } = await import("@/lib/client-pdf");
+            const furnBlob = await generateBillPdfBlob(furnitureBill);
+            const furnFormData = new FormData();
+            furnFormData.append("file", furnBlob, `Laxmi_Invoice_${furnitureBill.billNumber}.pdf`);
+            furnFormData.append("customerName", formData.customerName);
+            furnFormData.append("mobileNumber", formData.customerPhone);
+            furnFormData.append("billNumber", furnitureBill.billNumber);
+
+            fetch(`/api/v1/bills/${furnitureBill.id}/whatsapp/upload`, {
+              method: "POST",
+              body: furnFormData,
+            }).catch((furnErr) => console.error("Furniture bill WhatsApp dispatch failed:", furnErr));
+          } catch (fErr) {
+            console.error("Failed to generate furniture invoice PDF:", fErr);
+          }
+        }
+      }
 
       router.push("/bookings");
     } catch (err: any) {

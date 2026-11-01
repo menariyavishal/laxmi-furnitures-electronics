@@ -11,6 +11,7 @@ interface ConfirmStockModalProps {
   submitting?: boolean;
   items: PurchaseItemInput[];
   catalogProducts: any[];
+  categories?: any[];
   department: Department;
 }
 
@@ -21,6 +22,7 @@ export default function ConfirmStockModal({
   submitting = false,
   items,
   catalogProducts,
+  categories = [],
   department,
 }: ConfirmStockModalProps) {
   if (!isOpen) return null;
@@ -101,7 +103,7 @@ export default function ConfirmStockModal({
                             </span>
                           ) : (
                             <span className="text-[10.5px] text-blue-600 font-semibold">
-                              Will create a new catalog product
+                              New Product {item.categoryId ? `(${categories.find(c => c.id === Number(item.categoryId))?.name || "Category " + item.categoryId})` : ""}
                             </span>
                           )}
                           {item.warrantyMonths && (

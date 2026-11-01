@@ -112,6 +112,7 @@ export async function POST(req: Request) {
       advancePaid = 0,
       discount = 0,
       notes,
+      designPhotos,
       items,
     } = body;
 
@@ -203,10 +204,19 @@ export async function POST(req: Request) {
         const advPaid = parseFloat(advancePaid) || 0;
         const remaining = Math.max(0, netTotal - advPaid);
 
-        // Record discount transparently in notes
-        const bookingNotes = disc > 0
-          ? (notes ? `${notes} (Discount: ₹${disc})` : `Discount: ₹${disc}`)
-          : (notes || null);
+        // Record discount and design photos in notes
+        let bookingNotes = notes ? String(notes).trim() : "";
+        if (disc > 0) {
+          bookingNotes = bookingNotes ? `${bookingNotes} (Discount: ₹${disc})` : `Discount: ₹${disc}`;
+        }
+        if (designPhotos && Array.isArray(designPhotos) && designPhotos.length > 0) {
+          bookingNotes = bookingNotes
+            ? `${bookingNotes}\n[DESIGNS]:${JSON.stringify(designPhotos)}`
+            : `[DESIGNS]:${JSON.stringify(designPhotos)}`;
+        }
+        if (!bookingNotes) {
+          bookingNotes = null as any;
+        }
 
         // 3. Create Master Booking
         const newBooking = await tx.booking.create({

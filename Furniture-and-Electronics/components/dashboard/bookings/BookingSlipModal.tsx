@@ -2,7 +2,8 @@
 
 import React, { useRef, useEffect } from "react";
 import { BookingResponse } from "@/types/booking";
-import { FaPrint, FaTimes } from "react-icons/fa";
+import { FaPrint, FaTimes, FaCamera } from "react-icons/fa";
+import { extractDesignPhotos } from "@/lib/pdf/booking-slip";
 
 interface BookingSlipModalProps {
   booking: BookingResponse | null;
@@ -85,6 +86,8 @@ export default function BookingSlipModal({
   const hasElectronics = (booking.bookingItems || []).some(
     (i) => (i.department || "").toUpperCase() === "ELECTRONICS"
   );
+
+  const designPhotos = extractDesignPhotos(booking.notes);
 
   return (
     <div
@@ -352,6 +355,38 @@ export default function BookingSlipModal({
               <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-md bg-emerald-200 text-emerald-900 border border-emerald-300">
                 Status: Completed
               </span>
+            </div>
+          )}
+
+          {/* Attached Design References Section */}
+          {designPhotos && designPhotos.length > 0 && (
+            <div className="pt-2 border-t border-dashed border-gray-200">
+              <h4 className="text-[10px] font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <FaCamera className="w-3 h-3 text-blue-600" />
+                Attached Design References ({designPhotos.length})
+              </h4>
+              <div className="grid grid-cols-3 gap-2.5">
+                {designPhotos.map((url, idx) => (
+                  <div
+                    key={idx}
+                    className="relative rounded-lg border border-gray-200 bg-gray-50 overflow-hidden shadow-2xs aspect-video group"
+                  >
+                    <img
+                      src={url}
+                      alt={`Design ${idx + 1}`}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    />
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-mono font-bold"
+                    >
+                      #{idx + 1}
+                    </a>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

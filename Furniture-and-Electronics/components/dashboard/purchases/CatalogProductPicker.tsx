@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { FaSearch, FaChevronDown, FaBoxes, FaTimes, FaShieldAlt } from "react-icons/fa";
 import { Department } from "@/types/purchase";
 import { getProducts } from "@/lib/api/inventory";
@@ -24,8 +25,34 @@ export default function CatalogProductPicker({
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Calculate coordinates to render unclipped dropdown via Portal
+  const updatePosition = useCallback(() => {
+    if (triggerButtonRef.current) {
+      const rect = triggerButtonRef.current.getBoundingClientRect();
+      const pickerWidth = Math.max(rect.width, 360);
+      let left = rect.left;
+      // Prevent overflowing right edge of viewport
+      if (left + pickerWidth > window.innerWidth - 16) {
+        left = window.innerWidth - pickerWidth - 16;
+      }
+      setMenuPos({
+        top: rect.bottom + 4,
+        left: Math.max(16, left),
+        width: pickerWidth,
+      });
+    }
+  }, []);
 
   // Fetch max 20 products with search query
   const loadProducts = useCallback(
@@ -65,11 +92,12 @@ export default function CatalogProductPicker({
   const handleToggle = () => {
     if (disabled) return;
     if (!isOpen) {
+      updatePosition();
       setSearch("");
       loadProducts("");
       setTimeout(() => {
         searchInputRef.current?.focus();
-      }, 50);
+      }, 60);
     }
     setIsOpen(!isOpen);
   };
@@ -77,7 +105,12 @@ export default function CatalogProductPicker({
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        triggerButtonRef.current &&
+        !triggerButtonRef.current.contains(e.target as Node) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -88,6 +121,20 @@ export default function CatalogProductPicker({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // Listen to window scroll & resize while open to keep floating menu positioned
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleReposition = () => {
+      updatePosition();
+    };
+    window.addEventListener("scroll", handleReposition, true);
+    window.addEventListener("resize", handleReposition);
+    return () => {
+      window.removeEventListener("scroll", handleReposition, true);
+      window.removeEventListener("resize", handleReposition);
+    };
+  }, [isOpen, updatePosition]);
 
   const handleSelect = (product: any | null) => {
     onSelectProduct(product);
@@ -106,9 +153,10 @@ export default function CatalogProductPicker({
     : "-- Custom / New Item --";
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="relative w-full">
       {/* Dropdown Trigger Button */}
       <button
+        ref={triggerButtonRef}
         type="button"
         disabled={disabled}
         onClick={handleToggle}
@@ -125,115 +173,128 @@ export default function CatalogProductPicker({
         <FaChevronDown className="w-3 h-3 text-gray-400 shrink-0 ml-1.5" />
       </button>
 
-      {/* Dropdown Menu Popover */}
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden animate-fade-in flex flex-col max-h-72">
-          {/* Inline Keyword Search Input */}
-          <div className="p-2 border-b border-gray-100 bg-gray-50/70">
-            <div className="relative">
-              <FaSearch className="w-3 h-3 text-gray-400 absolute left-2.5 top-2.5" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search catalog by name or brand..."
-                className="w-full pl-7 pr-7 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:outline-hidden focus:ring-1 focus:ring-blue-500"
-              />
-              {search && (
-                <button
-                  type="button"
-                  onClick={() => setSearch("")}
-                  className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
-                >
-                  <FaTimes className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Items List */}
-          <div className="overflow-y-auto flex-1 divide-y divide-gray-100 text-xs">
-            {/* Top Option: Custom / New Item */}
-            <button
-              type="button"
-              onClick={() => handleSelect(null)}
-              className={`w-full text-left px-3 py-2 hover:bg-blue-50/60 flex items-center justify-between transition ${
-                !selectedProductId ? "bg-blue-50 font-bold text-blue-700" : "text-gray-700"
-              }`}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="text-blue-600 font-bold text-xs">✨</span>
-                <span>-- Custom / New Item --</span>
-              </div>
-              <span className="text-[10.5px] text-gray-400 font-normal">Reset fields</span>
-            </button>
-
-            {/* Loading Indicator */}
-            {loading && (
-              <div className="py-4 text-center text-gray-400 text-xs flex items-center justify-center gap-2">
-                <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                Searching catalog (top 20)...
-              </div>
-            )}
-
-            {/* Loaded Products (Max 20) */}
-            {!loading && products.length === 0 && search && (
-              <div className="py-4 text-center text-gray-400 text-xs">
-                No catalog items match &quot;{search}&quot;
-              </div>
-            )}
-
-            {!loading &&
-              products.map((p) => {
-                const isSelected = selectedProductId === p.id;
-                const cost = Number(p.costPrice) || 0;
-                return (
+      {/* Dropdown Menu Popover rendered via Portal to prevent any parent overflow clipping */}
+      {isOpen &&
+        mounted &&
+        menuPos &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            style={{
+              position: "fixed",
+              top: menuPos.top,
+              left: menuPos.left,
+              width: menuPos.width,
+              zIndex: 99999,
+            }}
+            className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden animate-fade-in flex flex-col max-h-80"
+          >
+            {/* Inline Keyword Search Input */}
+            <div className="p-2 border-b border-gray-100 bg-gray-50/80">
+              <div className="relative">
+                <FaSearch className="w-3 h-3 text-gray-400 absolute left-2.5 top-2.5" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search catalog by name or brand..."
+                  className="w-full pl-7 pr-7 py-1.5 text-xs border border-gray-200 rounded-md bg-white focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                />
+                {search && (
                   <button
-                    key={p.id}
                     type="button"
-                    onClick={() => handleSelect(p)}
-                    title={`${p.name} ${p.brand ? `(${p.brand})` : ""}`}
-                    className={`w-full text-left px-3 py-2 hover:bg-blue-50/50 flex flex-col gap-0.5 transition ${
-                      isSelected ? "bg-blue-50 border-l-3 border-blue-600" : ""
-                    }`}
+                    onClick={() => setSearch("")}
+                    className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
                   >
-                    <div className="font-bold text-gray-900 truncate">
-                      {p.name}
-                      {p.brand && (
-                        <span className="ml-1 text-[10.5px] text-gray-500 font-normal">
-                          ({p.brand})
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-[10.5px] text-gray-500 font-mono">
-                      <span className="flex items-center gap-1 text-emerald-700 font-semibold">
-                        <FaBoxes className="w-2.5 h-2.5" /> Stock: {p.quantityInStock}
-                      </span>
-                      <span>&bull;</span>
-                      <span>Cost: ₹{cost.toLocaleString("en-IN")}</span>
-                      {p.warrantyMonths ? (
-                        <>
-                          <span>&bull;</span>
-                          <span className="flex items-center gap-0.5 text-purple-700 font-semibold">
-                            <FaShieldAlt className="w-2.5 h-2.5" /> {p.warrantyMonths}M
-                          </span>
-                        </>
-                      ) : null}
-                    </div>
+                    <FaTimes className="w-3 h-3" />
                   </button>
-                );
-              })}
-          </div>
+                )}
+              </div>
+            </div>
 
-          {/* Footer note: Showing 20 at a time */}
-          <div className="px-3 py-1.5 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 flex justify-between items-center">
-            <span>Showing up to 20 results</span>
-            {search && <span>Filtered by &quot;{search}&quot;</span>}
-          </div>
-        </div>
-      )}
+            {/* Items List */}
+            <div className="overflow-y-auto flex-1 divide-y divide-gray-100 text-xs">
+              {/* Top Option: Custom / New Item */}
+              <button
+                type="button"
+                onClick={() => handleSelect(null)}
+                className={`w-full text-left px-3 py-2 hover:bg-blue-50/60 flex items-center justify-between transition ${
+                  !selectedProductId ? "bg-blue-50 font-bold text-blue-700" : "text-gray-700"
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-blue-600 font-bold text-xs">✨</span>
+                  <span>-- Custom / New Item --</span>
+                </div>
+                <span className="text-[10.5px] text-gray-400 font-normal">Reset fields</span>
+              </button>
+
+              {/* Loading Indicator */}
+              {loading && (
+                <div className="py-4 text-center text-gray-400 text-xs flex items-center justify-center gap-2">
+                  <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  Searching catalog (top 20)...
+                </div>
+              )}
+
+              {/* Loaded Products (Max 20) */}
+              {!loading && products.length === 0 && search && (
+                <div className="py-4 text-center text-gray-400 text-xs">
+                  No catalog items match &quot;{search}&quot;
+                </div>
+              )}
+
+              {!loading &&
+                products.map((p) => {
+                  const isSelected = selectedProductId === p.id;
+                  const cost = Number(p.costPrice) || 0;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handleSelect(p)}
+                      title={`${p.name} ${p.brand ? `(${p.brand})` : ""}`}
+                      className={`w-full text-left px-3 py-2 hover:bg-blue-50/50 flex flex-col gap-0.5 transition ${
+                        isSelected ? "bg-blue-50 border-l-3 border-blue-600" : ""
+                      }`}
+                    >
+                      <div className="font-bold text-gray-900 truncate">
+                        {p.name}
+                        {p.brand && (
+                          <span className="ml-1 text-[10.5px] text-gray-500 font-normal">
+                            ({p.brand})
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-[10.5px] text-gray-500 font-mono">
+                        <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                          <FaBoxes className="w-2.5 h-2.5" /> Stock: {p.quantityInStock}
+                        </span>
+                        <span>&bull;</span>
+                        <span>Cost: ₹{cost.toLocaleString("en-IN")}</span>
+                        {p.warrantyMonths ? (
+                          <>
+                            <span>&bull;</span>
+                            <span className="flex items-center gap-0.5 text-purple-700 font-semibold">
+                              <FaShieldAlt className="w-2.5 h-2.5" /> {p.warrantyMonths}M
+                            </span>
+                          </>
+                        ) : null}
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+
+            {/* Footer note: Showing 20 at a time */}
+            <div className="px-3 py-1.5 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 flex justify-between items-center">
+              <span>Showing up to 20 results</span>
+              {search && <span>Filtered by &quot;{search}&quot;</span>}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
-

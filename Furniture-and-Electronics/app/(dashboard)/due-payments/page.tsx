@@ -172,28 +172,22 @@ export default function DuePaymentsPage() {
           formData.append("mobileNumber", customerPhone);
           formData.append("billNumber", fullBill.billNumber);
 
-          let receiptMsg = "";
-          if (isFullyPaid) {
-            receiptMsg = `🎉 *Payment Successful - Fully Settled!*\n\nHello ${
-              fullBill.customer?.name || "Customer"
-            },\nYour final payment of ₹${collectedAmount.toLocaleString(
-              "en-IN"
-            )} for Invoice #${fullBill.billNumber} has been completely settled (Balance: ₹0).\n\nThank you for choosing *Laxmi Electronics & Furnitures*.`;
-          } else {
-            receiptMsg = `💳 *Payment Installment Received*\n\nHello ${
-              fullBill.customer?.name || "Customer"
-            },\nWe have received an installment of ₹${collectedAmount.toLocaleString(
-              "en-IN"
-            )} for Invoice #${fullBill.billNumber}.\n\n*Total Bill:* ₹${Number(
-              fullBill.totalAmount
-            ).toLocaleString("en-IN")}\n*Paid so far:* ₹${Number(
-              updatedBillData.paidAmount
-            ).toLocaleString("en-IN")}\n*Remaining Due:* ₹${Number(
-              updatedBillData.dueAmount
-            ).toLocaleString(
-              "en-IN"
-            )}\n\nThank you for choosing *Laxmi Electronics & Furnitures*.`;
-          }
+          const { formatDuePaymentMessage } = await import("@/lib/whatsapp/templates");
+          const receiptMsg = formatDuePaymentMessage({
+            customerName: fullBill.customer?.name || "Customer",
+            billNumber: fullBill.billNumber,
+            installmentAmount: collectedAmount,
+            paymentMode: "Cash / UPI",
+            paymentDate: new Date().toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            }),
+            totalAmount: Number(fullBill.totalAmount),
+            paidAmount: Number(updatedBillData.paidAmount),
+            dueAmount: Number(updatedBillData.dueAmount),
+            isFullyPaid,
+          });
 
           formData.append("customMessage", receiptMsg);
 

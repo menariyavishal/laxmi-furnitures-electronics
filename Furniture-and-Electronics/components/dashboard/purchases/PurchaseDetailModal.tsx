@@ -142,21 +142,21 @@ export default function PurchaseDetailModal({
             </h4>
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <table className="w-full text-left text-xs">
-                <thead className="bg-gray-50 text-gray-500 text-[10px] uppercase font-bold border-b border-gray-200">
+                <thead className="bg-gray-50 text-gray-700 text-[10.5px] uppercase font-extrabold border-b border-gray-200">
                   <tr>
-                    <th className="py-2 px-3">#</th>
-                    <th className="py-2 px-3">Item Description</th>
-                    <th className="py-2 px-3 text-right">Cost/Unit</th>
-                    <th className="py-2 px-3 text-center">Qty</th>
-                    <th className="py-2 px-3 text-right">Line Total</th>
+                    <th className="py-2.5 px-3">#</th>
+                    <th className="py-2.5 px-3">Item Description</th>
+                    <th className="py-2.5 px-3 text-right">Cost/Unit</th>
+                    <th className="py-2.5 px-3 text-center">Qty</th>
+                    <th className="py-2.5 px-3 text-right">Line Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {purchase.items.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="py-2 px-3 text-gray-400">{idx + 1}</td>
+                    <tr key={idx} className="hover:bg-gray-50/70">
+                      <td className="py-2.5 px-3 text-gray-500 font-bold">{idx + 1}</td>
                       <td
-                        className="py-2 px-3 font-semibold text-gray-800 cursor-default"
+                        className="py-2.5 px-3 font-bold text-gray-900 cursor-default"
                         title={item.itemName}
                       >
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -173,10 +173,12 @@ export default function PurchaseDetailModal({
                           </div>
                         )}
                       </td>
-                      <td className="py-2 px-3 text-right font-mono">
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-gray-900">
                         ₹ {Number(item.unitCostPrice).toLocaleString("en-IN")}
                       </td>
-                      <td className="py-2 px-3 text-center font-bold">{item.quantity}</td>
+                      <td className="py-2.5 px-3 text-center font-black text-gray-900 font-mono text-xs">
+                        {item.quantity}
+                      </td>
                       <td className="py-2 px-3 text-right font-black text-gray-900 font-mono">
                         ₹ {Number(item.lineTotal).toLocaleString("en-IN")}
                       </td>

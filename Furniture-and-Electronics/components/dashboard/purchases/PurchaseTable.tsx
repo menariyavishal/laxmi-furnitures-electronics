@@ -3,6 +3,7 @@
 import React from "react";
 import { FaMoneyBillWave, FaEye, FaTrash, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { Purchase } from "@/types/purchase";
+import { Skeleton } from "@/components/dashboard/Skeleton";
 
 interface PurchaseTableProps {
   purchases: Purchase[];
@@ -25,9 +26,64 @@ export default function PurchaseTable({
 }: PurchaseTableProps) {
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs p-8 text-center text-gray-500">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
-        <p className="text-sm font-medium">Loading purchases...</p>
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-gray-600 uppercase tracking-wider text-[10.5px] font-extrabold">
+                <th className="py-3 px-4">Date & Purchase #</th>
+                <th className="py-3 px-4">Vendor / Supplier</th>
+                <th className="py-3 px-4">Dept</th>
+                <th className="py-3 px-4">Items Summary</th>
+                <th className="py-3 px-4 text-right">Total (₹)</th>
+                <th className="py-3 px-4 text-right">Paid (₹)</th>
+                <th className="py-3 px-4 text-right">Due (₹)</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <tr key={i}>
+                  <td className="py-3.5 px-4 space-y-1.5">
+                    <Skeleton className="h-3.5 w-24 rounded" />
+                    <Skeleton className="h-2.5 w-16 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 space-y-1.5">
+                    <Skeleton className="h-3.5 w-32 rounded" />
+                    <Skeleton className="h-2.5 w-20 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <Skeleton className="h-5 w-14 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 space-y-1.5">
+                    <Skeleton className="h-3.5 w-36 rounded" />
+                    <Skeleton className="h-2.5 w-24 rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <Skeleton className="h-4 w-16 ml-auto rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <Skeleton className="h-4 w-16 ml-auto rounded" />
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <Skeleton className="h-4 w-14 ml-auto rounded" />
+                  </td>
+                  <td className="py-3.5 px-4">
+                    <Skeleton className="h-5 w-16 mx-auto rounded-full" />
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <div className="flex justify-end gap-1.5">
+                      <Skeleton className="h-6 w-16 rounded" />
+                      <Skeleton className="h-6 w-6 rounded" />
+                      <Skeleton className="h-6 w-6 rounded" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }

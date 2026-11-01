@@ -104,7 +104,7 @@ export default function DeliveryInvoiceModal({
     setLoading(true);
 
     try {
-      await generateDeliveryInvoice(booking.id, {
+      const createdBill = await generateDeliveryInvoice(booking.id, {
         deliveryDate,
         itemSerialNumbers: serialNumbers,
         paymentMode,
@@ -117,6 +117,58 @@ export default function DeliveryInvoiceModal({
         isGstInclusive,
         totalAmount: finalBillTotal,
       });
+
+      // Auto-dispatch WhatsApp Electronics Delivery Invoice
+      const customerPhone = booking.customer?.phone;
+      if (customerPhone && createdBill) {
+        try {
+          const { generateBillPdfBlob } = await import("@/lib/client-pdf");
+          const { formatDeliveryInvoiceMessage } = await import("@/lib/whatsapp/templates");
+
+          const customerName = booking.customer?.name || "Customer";
+          const deliveryMsg = formatDeliveryInvoiceMessage({
+            customerName,
+            bookingNumber: booking.bookingNumber,
+            billNumber: createdBill.billNumber,
+            deliveryDate,
+            items: selectedItems.map((i) => ({
+              productName: i.product.name,
+              quantity: i.quantity,
+              serialNumber: serialNumbers[i.id] || null,
+              warrantyMonths: i.product.warrantyMonths,
+            })),
+            invoiceTotal: finalBillTotal,
+            amountPaidNow: parseFloat(amountPaidNow) || 0,
+            remainingBalance: Math.max(0, Number(booking.remainingBalance) - (parseFloat(amountPaidNow) || 0)),
+          });
+
+          const fullBillData = {
+            ...createdBill,
+            customer: booking.customer,
+            billItems: selectedItems.map((i) => ({
+              product: i.product,
+              quantity: i.quantity,
+              unitPrice: i.unitPrice,
+              lineTotal: i.lineTotal,
+            })),
+          };
+
+          const blob = await generateBillPdfBlob(fullBillData);
+          const formData = new FormData();
+          formData.append("file", blob, `Laxmi_Invoice_${createdBill.billNumber}.pdf`);
+          formData.append("customerName", customerName);
+          formData.append("mobileNumber", customerPhone);
+          formData.append("billNumber", createdBill.billNumber);
+          formData.append("customMessage", deliveryMsg);
+
+          fetch(`/api/v1/bills/${createdBill.id}/whatsapp/upload`, {
+            method: "POST",
+            body: formData,
+          }).catch((err) => console.error("Auto WhatsApp electronics dispatch failed:", err));
+        } catch (waErr) {
+          console.error("Failed to generate delivery invoice PDF for WhatsApp:", waErr);
+        }
+      }
 
       onSuccess();
       onClose();

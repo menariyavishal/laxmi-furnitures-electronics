@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { BookingResponse } from "@/types/booking";
+import { FaWhatsapp } from "react-icons/fa";
 
 interface BookingCardProps {
   booking: BookingResponse;
@@ -32,6 +33,51 @@ export default function BookingCard({
     booking.bills && booking.bills.length > 0
       ? totalBillsDue + unbilledItemsDue
       : Number(booking.remainingBalance);
+
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+
+  const handleResendWhatsApp = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const phone = booking.customer?.phone;
+    if (!phone) {
+      alert("No customer phone number attached to this booking.");
+      return;
+    }
+    setSendingWhatsApp(true);
+    try {
+      const { generateBookingSlipPdfBlob } = await import("@/lib/pdf/booking-slip");
+      const blob = await generateBookingSlipPdfBlob(booking);
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = async () => {
+        try {
+          const base64data = (reader.result as string)?.split(",")[1];
+          const res = await fetch(`/api/v1/bookings/${booking.id}/whatsapp/resend`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pdfBase64: base64data,
+              isNewBooking: false,
+            }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert(`✅ Booking slip sent to ${booking.customer.name} (${phone}) on WhatsApp!`);
+          } else {
+            alert(`⚠️ WhatsApp notice: ${data.error || "Failed to send"}`);
+          }
+        } catch (err: any) {
+          alert(`Error sending WhatsApp: ${err.message}`);
+        } finally {
+          setSendingWhatsApp(false);
+        }
+      };
+    } catch (err: any) {
+      console.error("Failed to generate/send slip:", err);
+      alert(`Error generating slip: ${err.message}`);
+      setSendingWhatsApp(false);
+    }
+  };
 
   const paidPercent = total > 0 ? Math.min(100, Math.round(((total - liveRemainingDue) / total) * 100)) : 0;
 
@@ -108,6 +154,22 @@ export default function BookingCard({
                 <span>Slip</span>
               </button>
             )}
+
+            {/* Quick Resend WhatsApp Button */}
+            <button
+              type="button"
+              disabled={sendingWhatsApp}
+              onClick={handleResendWhatsApp}
+              className={`inline-flex items-center justify-center h-7 px-2 text-xs font-bold rounded-md border shadow-2xs transition-colors ${
+                sendingWhatsApp
+                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse cursor-wait"
+                  : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"
+              }`}
+              title="Resend Booking Slip & Designs via WhatsApp"
+            >
+              <FaWhatsapp className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline ml-1">WhatsApp</span>
+            </button>
 
             <span
               className={`inline-flex items-center h-7 px-2.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${

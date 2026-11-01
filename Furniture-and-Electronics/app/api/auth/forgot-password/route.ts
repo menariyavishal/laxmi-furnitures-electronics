@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       try {
         const text = `*Security Alert: Password Reset Requested*\n\nA password reset was requested for your owner account. Click the link below to reset your password:\n\n${resetUrl}\n\n_If you did not request this, please ignore this message._`;
         
-        const { isBotConfigured, botSendMessage } = await import("@/lib/whatsapp-client");
+        const { isBotConfigured, botSendMessage } = await import("@/lib/whatsapp/client");
         if (!isBotConfigured()) {
           throw new Error("WhatsApp bot not configured");
         }

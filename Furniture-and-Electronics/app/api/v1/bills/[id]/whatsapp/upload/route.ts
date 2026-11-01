@@ -47,7 +47,7 @@ export async function POST(
 
     // We cannot save files to /public in Vercel Serverless (read-only filesystem)
     // So we will just store a virtual path in the DB and pass the base64 directly to the delivery function.
-    const filename = `SKC_Invoice_${billNumber}.pdf`;
+    const filename = `Laxmi_Invoice_${billNumber}.pdf`;
     const relativePath = `uploads/invoices/${filename}`;
     const base64String = buffer.toString('base64');
 

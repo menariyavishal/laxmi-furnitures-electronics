@@ -323,7 +323,7 @@ export default function BillingPage() {
           const { generateBillPdfBlob } = await import("@/lib/client-pdf");
           const blob = await generateBillPdfBlob(bill);
           const formData = new FormData();
-          formData.append("file", blob, `SKC_Invoice_${bill.billNumber}.pdf`);
+          formData.append("file", blob, `Laxmi_Invoice_${bill.billNumber}.pdf`);
           formData.append("customerName", billData.customerName);
           if (billData.customerAddress) {
             formData.append("customerAddress", billData.customerAddress);
@@ -352,7 +352,7 @@ export default function BillingPage() {
 
   const handlePrint = useReactToPrint({
     contentRef: printComponentRef,
-    documentTitle: `SKC_Invoice_${createdBill?.billNumber || ""}`,
+    documentTitle: `Laxmi_Invoice_${createdBill?.billNumber || ""}`,
   });
 
   const closePrintModal = () => {

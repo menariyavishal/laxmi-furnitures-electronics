@@ -35,8 +35,8 @@ interface PackageItemsTableProps {
     config: { customPrice?: number; customisations?: string }
   ) => void;
   onRemoveItem: (index: number) => void;
-  attachedPhotos?: Array<{ id: string; url: string; name: string }>;
-  onPhotosChange?: (photos: Array<{ id: string; url: string; name: string }>) => void;
+  attachedPhotos?: Array<{ id: string; url: string; name: string; file?: File }>;
+  onPhotosChange?: (photos: Array<{ id: string; url: string; name: string; file?: File }>) => void;
 }
 
 export default function PackageItemsTable({
@@ -55,13 +55,14 @@ export default function PackageItemsTable({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const newPhotos: Array<{ id: string; url: string; name: string }> = [];
+    const newPhotos: Array<{ id: string; url: string; name: string; file?: File }> = [];
     Array.from(files).forEach((file) => {
       const url = URL.createObjectURL(file);
       newPhotos.push({
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         url,
         name: file.name,
+        file,
       });
     });
 

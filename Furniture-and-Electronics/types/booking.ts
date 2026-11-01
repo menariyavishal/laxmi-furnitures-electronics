@@ -21,6 +21,7 @@ export interface CreateBookingPayload {
   advancePaid: number;
   discount?: number;
   notes?: string;
+  designPhotos?: string[];
   items: BookingItemInput[];
 }
 

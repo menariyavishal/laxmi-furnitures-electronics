@@ -396,22 +396,28 @@ export async function POST(req: Request) {
         });
       }
 
-      // Return fully hydrated purchase with relations
-      return await tx.purchase.findUnique({
-        where: { id: createdPurchase.id },
-        include: {
-          vendor: true,
-          items: {
-            include: {
-              product: true,
-            },
-          },
-          payments: true,
-        },
-      });
+      return createdPurchase.id;
+    },
+    {
+      maxWait: 15000,
+      timeout: 30000,
     });
 
-    return NextResponse.json(result, { status: 201 });
+    // Return fully hydrated purchase with relations outside transaction
+    const hydratedPurchase = await prisma.purchase.findUnique({
+      where: { id: result },
+      include: {
+        vendor: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        payments: true,
+      },
+    });
+
+    return NextResponse.json(hydratedPurchase, { status: 201 });
   } catch (error: any) {
     console.error("Error creating purchase:", error);
     return NextResponse.json(

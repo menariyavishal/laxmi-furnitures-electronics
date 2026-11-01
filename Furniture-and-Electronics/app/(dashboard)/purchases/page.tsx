@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
+import useSWR from "swr";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDepartment } from "@/components/dashboard/department/DepartmentContext";
-import { Purchase, Vendor, PurchaseKPIs, Department } from "@/types/purchase";
+import { Purchase, Vendor, PurchaseKPIs } from "@/types/purchase";
 import { getPurchases, getVendors, deletePurchase } from "@/lib/api/purchase";
 import PurchaseKPICards from "@/components/dashboard/purchases/PurchaseKPICards";
 import PurchaseFilters from "@/components/dashboard/purchases/PurchaseFilters";
@@ -22,23 +23,10 @@ export default function PurchasesPage() {
 
   // Search & Filters State
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(search, 350);
   const [statusFilter, setStatusFilter] = useState("ALL"); // "ALL" | "PENDING_DUE" | "PAID"
   const [selectedVendorId, setSelectedVendorId] = useState("ALL");
   const [page, setPage] = useState(1);
-
-  // Data State
-  const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [kpis, setKpis] = useState<PurchaseKPIs>({
-    totalPurchasesCount: 0,
-    totalPurchaseAmount: 0,
-    totalPaidAmount: 0,
-    totalDueAmount: 0,
-    unpaidPurchasesCount: 0,
-  });
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Modals State
   const [isNewPurchaseOpen, setIsNewPurchaseOpen] = useState(false);
@@ -47,59 +35,76 @@ export default function PurchasesPage() {
   const [selectedDetailPurchase, setSelectedDetailPurchase] = useState<Purchase | null>(null);
   const [selectedReceiveStockPurchase, setSelectedReceiveStockPurchase] = useState<Purchase | null>(null);
 
-  // Fetch Vendors
-  const fetchVendorsList = useCallback(async () => {
-    try {
-      const data = await getVendors();
-      setVendors(data);
-    } catch (err) {
-      console.error("Failed to load vendors:", err);
-    }
-  }, []);
+  // 1. SWR Caching for Vendors List
+  const { data: vendorsData, mutate: mutateVendors } = useSWR<Vendor[]>(
+    "/api/v1/vendors",
+    () => getVendors(),
+    { revalidateOnFocus: false, dedupingInterval: 10000 }
+  );
+  const vendors = vendorsData || [];
 
-  // Fetch Purchases
-  const fetchPurchasesList = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await getPurchases({
+  // 2. SWR Caching for Purchases Data & KPIs
+  const purchasesCacheKey = [
+    "purchases",
+    debouncedSearch,
+    activeDept,
+    selectedVendorId,
+    statusFilter,
+    page,
+  ];
+
+  const {
+    data: purchasesResponse,
+    isLoading,
+    mutate: mutatePurchases,
+  } = useSWR(
+    purchasesCacheKey,
+    () =>
+      getPurchases({
         search: debouncedSearch,
         department: activeDept === "ALL" ? undefined : activeDept,
         vendorId: selectedVendorId === "ALL" ? undefined : selectedVendorId,
         paymentStatus: statusFilter === "ALL" ? undefined : statusFilter,
         page,
         limit: 20,
-      });
-
-      setPurchases(res.items || []);
-      setTotalPages(res.totalPages || 1);
-      if (res.kpis) {
-        setKpis(res.kpis);
-      }
-    } catch (err) {
-      console.error("Failed to load purchases:", err);
-    } finally {
-      setLoading(false);
+      }),
+    {
+      keepPreviousData: true,
+      dedupingInterval: 5000,
+      revalidateOnFocus: true,
     }
-  }, [debouncedSearch, activeDept, selectedVendorId, statusFilter, page]);
+  );
 
-  useEffect(() => {
-    fetchVendorsList();
-  }, [fetchVendorsList]);
+  const purchases = purchasesResponse?.items || [];
+  const totalPages = purchasesResponse?.totalPages || 1;
+  const kpis: PurchaseKPIs = purchasesResponse?.kpis || {
+    totalPurchasesCount: 0,
+    totalPurchaseAmount: 0,
+    totalPaidAmount: 0,
+    totalDueAmount: 0,
+    unpaidPurchasesCount: 0,
+  };
+  const loading = isLoading;
 
-  useEffect(() => {
-    fetchPurchasesList();
-  }, [fetchPurchasesList]);
+  // Refresh cache on any mutation
+  const refreshAll = () => {
+    mutatePurchases();
+    mutateVendors();
+  };
 
   // Handle Delete Purchase
   const handleDeletePurchase = async (purchase: Purchase) => {
-    if (!confirm(`Are you sure you want to delete purchase #${purchase.purchaseNumber} from ${purchase.vendor.name}? If stock was added, it will be automatically rolled back.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete purchase #${purchase.purchaseNumber} from ${purchase.vendor.name}? If stock was added, it will be automatically rolled back.`
+      )
+    ) {
       return;
     }
 
     try {
       await deletePurchase(purchase.id);
-      fetchPurchasesList();
-      fetchVendorsList();
+      refreshAll();
     } catch (err: any) {
       console.error(err);
       alert(err.message || "Failed to delete purchase.");
@@ -107,7 +112,7 @@ export default function PurchasesPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fade-in">
       {/* Page Title & Subtitle */}
       <div>
         <h1 className="text-2xl font-black text-gray-900 tracking-tight">
@@ -183,10 +188,7 @@ export default function PurchasesPage() {
       <NewPurchaseModal
         isOpen={isNewPurchaseOpen}
         onClose={() => setIsNewPurchaseOpen(false)}
-        onSuccess={() => {
-          fetchPurchasesList();
-          fetchVendorsList();
-        }}
+        onSuccess={refreshAll}
         vendors={vendors}
         initialDepartment={activeDept === "ELECTRONICS" ? "ELECTRONICS" : "FURNITURE"}
       />
@@ -194,20 +196,14 @@ export default function PurchasesPage() {
       <PayInstallmentModal
         isOpen={Boolean(selectedPayPurchase)}
         onClose={() => setSelectedPayPurchase(null)}
-        onSuccess={() => {
-          fetchPurchasesList();
-          fetchVendorsList();
-        }}
+        onSuccess={refreshAll}
         purchase={selectedPayPurchase}
       />
 
       <VendorManagementModal
         isOpen={isVendorManagerOpen}
         onClose={() => setIsVendorManagerOpen(false)}
-        onVendorsUpdated={() => {
-          fetchVendorsList();
-          fetchPurchasesList();
-        }}
+        onVendorsUpdated={refreshAll}
         vendors={vendors}
         isOwner={isOwner}
       />
@@ -223,10 +219,7 @@ export default function PurchasesPage() {
       <ReceiveStockModal
         isOpen={Boolean(selectedReceiveStockPurchase)}
         onClose={() => setSelectedReceiveStockPurchase(null)}
-        onSuccess={() => {
-          fetchPurchasesList();
-          fetchVendorsList();
-        }}
+        onSuccess={refreshAll}
         purchase={selectedReceiveStockPurchase}
       />
     </div>
