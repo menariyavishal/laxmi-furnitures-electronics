@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: mobile-shop-db
+    environment:
+      POSTGRES_USER: shop_admin
+      POSTGRES_PASSWORD: shop_password
+      POSTGRES_DB: mobile_shop
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

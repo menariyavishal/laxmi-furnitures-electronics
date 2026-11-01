@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #020617;
+    --foreground: #f8fafc;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Force high visibility on all form inputs and controls */
+input,
+select,
+textarea {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #9ca3af !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #4b5563 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Hide Next.js Dev Indicator completely */
+#next-route-announcer,
+[data-nextjs-scroll-focus-boundary],
+.nextjs-toast-errors-parent,
+#nextjs-dev-overlay,
+nextjs-portal,
+.__next-disclaimer {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide standard up/down spin buttons on number inputs */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield !important;
+}
+
+/* ── Print / A4 Invoice ── */
+@media print {
+  /* Hide everything except the printable invoice area */
+  body > *:not(#invoice-print-root) {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  /* The div wrapping InvoiceTemplate on billing detail page */
+  #invoice-print-root {
+    display: block !important;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Ensure the invoice box fits one page without overflow */
+  .invoice-print-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    page-break-inside: avoid;
+    overflow: hidden;
+  }
+}

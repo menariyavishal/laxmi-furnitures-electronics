@@ -1,0 +1,355 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export async function GET(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get("search") || "";
+    const pageStr = searchParams.get("page");
+    const limitStr = searchParams.get("limit");
+    const department = searchParams.get("department");
+    
+    // Clamp pagination to prevent unbounded memory exhaustion (1-100)
+    const page = Math.max(parseInt(pageStr || "1", 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(limitStr || "50", 10) || 50, 1), 100);
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    const paymentStatus = searchParams.get("paymentStatus");
+
+    const where: any = {
+      NOT: { billNumber: { startsWith: "QS-" } },
+    };
+
+    if (paymentStatus && paymentStatus !== "ALL") {
+      where.paymentStatus = paymentStatus;
+    }
+
+    if (search) {
+      where.OR = [
+        { billNumber: { contains: search, mode: "insensitive" } },
+        { customer: { phone: { contains: search } } },
+        { customer: { name: { contains: search, mode: "insensitive" } } },
+      ];
+    }
+
+    if (department && department !== "ALL") {
+      where.department = department.toUpperCase();
+    }
+
+    const bills = await prisma.bill.findMany({
+      where,
+      skip,
+      take,
+      include: {
+        customer: true,
+        booking: {
+          select: {
+            id: true,
+            bookingNumber: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            username: true,
+          },
+        },
+        billItems: {
+          include: {
+            product: true,
+            productUnit: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const total = limit > 0 ? await prisma.bill.count({ where }) : bills.length;
+    const hasMore = limit > 0 ? skip + bills.length < total : false;
+
+    if (pageStr || limitStr) {
+      return NextResponse.json({
+        items: bills,
+        hasMore,
+        total
+      });
+    }
+
+    return NextResponse.json(bills);
+  } catch (error) {
+    console.error("Error fetching bills:", error);
+    return NextResponse.json({ error: "Failed to fetch bills" }, { status: 500 });
+  }
+}
+
+import { formatName } from "@/lib/format";
+
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    let { 
+      customerName, customerPhone, customerAddress, paymentMode, discount = 0, items,
+      sgstPercent = 0, cgstPercent = 0, paidAmount,
+      financeProviderId, emiAmount, financeMonths
+    } = body;
+
+    customerName = formatName(customerName);
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    }
+
+    if (!customerName || customerName.trim() === "") {
+      return NextResponse.json({ error: "Customer name is required" }, { status: 400 });
+    }
+
+    if (!customerPhone || customerPhone.trim() === "" || customerPhone.trim().length !== 10) {
+      return NextResponse.json({ error: "Valid 10-digit customer phone number is required" }, { status: 400 });
+    }
+
+    if (!paymentMode) {
+      return NextResponse.json({ error: "Payment mode is required" }, { status: 400 });
+    }
+
+    let createdByUserId = parseInt(session.user.id);
+    if (!createdByUserId || isNaN(createdByUserId)) {
+      createdByUserId = 1;
+    }
+
+    // Run creation in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      const existingUser = await tx.user.findUnique({
+        where: { id: createdByUserId },
+        select: { id: true },
+      });
+      if (!existingUser) {
+        const firstUser = await tx.user.findFirst({ select: { id: true } });
+        createdByUserId = firstUser ? firstUser.id : 1;
+      }
+
+      // 1. Create or Find Customer
+      let customerId: number | null = null;
+      if (customerPhone) {
+        let customer = await tx.customer.findFirst({
+          where: { phone: customerPhone },
+        });
+
+        if (!customer) {
+          customer = await tx.customer.create({
+            data: {
+              name: customerName || null,
+              address: customerAddress || null,
+              phone: customerPhone,
+            },
+          });
+        } else if ((customerName && customer.name !== customerName) || (customerAddress && customer.address !== customerAddress)) {
+          customer = await tx.customer.update({
+            where: { id: customer.id },
+            data: { 
+              name: customerName || customer.name,
+              address: customerAddress || customer.address
+            },
+          });
+        }
+        customerId = customer.id;
+      }
+
+      // 2. Generate Sequential Bill Number
+      const lastStandardBill = await tx.bill.findFirst({
+        where: {
+          NOT: {
+            billNumber: { startsWith: "QS-" }
+          }
+        },
+        orderBy: { id: 'desc' }
+      });
+      
+      let nextBillNo = "301";
+      if (lastStandardBill) {
+        const lastNo = parseInt(lastStandardBill.billNumber, 10);
+        if (!isNaN(lastNo)) {
+          nextBillNo = (lastNo + 1).toString();
+        } else {
+          const count = await tx.bill.count({ where: { NOT: { billNumber: { startsWith: "QS-" } } } });
+          nextBillNo = (300 + count + 1).toString();
+        }
+      }
+
+      // 3. Process Cart Items and calculate totals
+      let subtotal = 0;
+      const billItemsData = [];
+
+      for (const item of items) {
+        const { productId, quantity, productUnitId } = item;
+        const qty = parseInt(quantity);
+
+        const product = await tx.product.findUnique({
+          where: { id: parseInt(productId) },
+        });
+
+        if (!product || !product.isActive) {
+          throw new Error(`Product with ID ${productId} not found or inactive.`);
+        }
+
+        const price = product.sellingPrice;
+        const lineTotal = Number(price) * qty;
+        subtotal += lineTotal;
+
+        if (product.productType === "serialized" || product.productType === "electronics") {
+          // Serialized: quantity must be 1 per unit
+          if (!productUnitId) {
+            throw new Error(
+              product.productType === "electronics"
+                ? `Product unit (S M No.) is required for electronics product: ${product.name}`
+                : `Product unit (IMEI) is required for serialized product: ${product.name}`
+            );
+          }
+
+          const unit = await tx.productUnit.findUnique({
+            where: { id: parseInt(productUnitId) },
+          });
+
+          if (!unit || unit.status !== "in_stock") {
+            throw new Error(
+              product.productType === "electronics"
+                ? `Selected S M No. unit is no longer available.`
+                : `Selected IMEI unit is no longer available.`
+            );
+          }
+
+          // Mark unit as sold
+          await tx.productUnit.update({
+            where: { id: unit.id },
+            data: { status: "sold", soldAt: new Date() },
+          });
+
+          // Decrement product stock by 1
+          await tx.product.update({
+            where: { id: product.id },
+            data: { quantityInStock: { decrement: 1 } },
+          });
+
+          billItemsData.push({
+            productId: product.id,
+            productUnitId: unit.id,
+            quantity: 1,
+            unitPrice: price,
+            lineTotal: lineTotal,
+          });
+
+        } else {
+          // Quantity based product
+          if (product.quantityInStock < qty) {
+            throw new Error(`Insufficient stock for product ${product.name}. Available: ${product.quantityInStock}`);
+          }
+
+          // Decrement product stock
+          await tx.product.update({
+            where: { id: product.id },
+            data: { quantityInStock: { decrement: qty } },
+          });
+
+          billItemsData.push({
+            productId: product.id,
+            quantity: qty,
+            unitPrice: price,
+            lineTotal: lineTotal,
+          });
+        }
+      }
+
+      const discountVal = parseFloat(discount) || 0;
+      const grossAfterDiscount = subtotal - discountVal;
+
+      const totalGstPercent = (parseFloat(sgstPercent) || 0) + (parseFloat(cgstPercent) || 0);
+      const taxableAmount = grossAfterDiscount / (1 + totalGstPercent / 100);
+
+      const sgstAmt = taxableAmount * ((parseFloat(sgstPercent) || 0) / 100);
+      const cgstAmt = taxableAmount * ((parseFloat(cgstPercent) || 0) / 100);
+
+      const totalAmount = grossAfterDiscount;
+
+      const actualPaid = paidAmount !== undefined ? parseFloat(paidAmount) : totalAmount;
+      const dueAmount = totalAmount - actualPaid;
+      const paymentStatus = dueAmount > 0 ? "PARTIAL" : "PAID";
+
+      // 4. Create the Bill
+      const billData: any = {
+        billNumber: nextBillNo,
+        customerId,
+        createdByUserId,
+        department: (body.department || "FURNITURE").toUpperCase(),
+        billType: "REGULAR",
+        subtotal: taxableAmount,
+        discount: discountVal,
+        sgstPercent: parseFloat(sgstPercent) || 0,
+        cgstPercent: parseFloat(cgstPercent) || 0,
+        sgstAmount: sgstAmt,
+        cgstAmount: cgstAmt,
+        totalAmount,
+        paidAmount: actualPaid,
+        dueAmount: dueAmount,
+        paymentStatus: paymentStatus,
+        paymentMode,
+        status: "completed",
+        billItems: {
+          create: billItemsData,
+        },
+      };
+
+      if (paymentMode.toLowerCase() === "finance" && financeProviderId && emiAmount !== undefined) {
+        billData.financeRecord = {
+          create: {
+            financeProviderId: parseInt(financeProviderId),
+            emiAmount: parseFloat(emiAmount),
+            months: financeMonths ? parseInt(financeMonths) : null,
+          }
+        };
+      }
+
+      const bill = await tx.bill.create({
+        data: billData,
+        include: {
+          customer: true,
+          billItems: {
+            include: {
+              product: true,
+              productUnit: true,
+            },
+          },
+          financeRecord: {
+            include: {
+              financeProvider: true
+            }
+          }
+        },
+      });
+
+      return bill;
+    },
+    {
+      maxWait: 5000,
+      timeout: 15000,
+    });
+
+    return NextResponse.json(result, { status: 201 });
+  } catch (error: any) {
+    console.error("Error creating bill:", error);
+    return NextResponse.json({ error: error.message || "Failed to create bill" }, { status: 400 });
+  }
+}

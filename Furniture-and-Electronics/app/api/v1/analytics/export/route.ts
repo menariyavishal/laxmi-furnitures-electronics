@@ -1,0 +1,232 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import ExcelJS from "exceljs";
+
+export async function GET(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "owner") {
+      return new Response("Forbidden", { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const daysParam = searchParams.get("days");
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
+
+    const formatDate = (date: Date) => {
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${d}-${m}-${y}`;
+    };
+
+    let startDate: Date;
+    let endDate: Date = new Date();
+    let fileSuffix = "custom";
+
+    if (startDateParam && endDateParam) {
+      startDate = new Date(startDateParam);
+      endDate = new Date(endDateParam);
+      endDate.setHours(23, 59, 59, 999);
+      fileSuffix = `${formatDate(startDate)}_to_${formatDate(endDate)}`;
+    } else {
+      const days = parseInt(daysParam || "30");
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      fileSuffix = `${formatDate(startDate)}_to_${formatDate(endDate)}`;
+    }
+
+    const bills = await prisma.bill.findMany({
+      where: {
+        status: "completed",
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        customer: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        billItems: {
+          include: {
+            product: true,
+            productUnit: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Create Excel Workbook
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sales Report");
+
+    // Define columns keys and headers
+    worksheet.columns = [
+      { header: "Bill Number", key: "billNumber" },
+      { header: "Date", key: "date" },
+      { header: "Brand Name", key: "brandName" },
+      { header: "Product Name", key: "productName" },
+      { header: "IMEI / SN", key: "imeiNumber" },
+      { header: "Customer Name", key: "customerName" },
+      { header: "Customer Phone", key: "customerPhone" },
+      { header: "Payment Mode", key: "paymentMode" },
+      { header: "Subtotal (Rs.)", key: "subtotal" },
+      { header: "Discount (Rs.)", key: "discount" },
+      { header: "Grand Total (Rs.)", key: "grandTotal" },
+      { header: "Billed By", key: "billedBy" },
+    ];
+
+    // Add rows from DB query and merge cells for multi-item bills
+    let currentRow = 2; // Row 1 is header
+
+    bills.forEach((b) => {
+      const itemsCount = b.billItems.length || 1;
+      const startRow = currentRow;
+      const endRow = startRow + itemsCount - 1;
+
+      if (b.billItems.length === 0) {
+        worksheet.addRow({
+          billNumber: b.billNumber,
+          date: new Date(b.createdAt),
+          brandName: "-",
+          productName: "No items",
+          imeiNumber: "-",
+          customerName: b.customer?.name || "Guest",
+          customerPhone: b.customer?.phone || "-",
+          paymentMode: b.paymentMode.toUpperCase(),
+          subtotal: Number(Number(Number(b.totalAmount) + Number(b.discount)).toFixed(2)),
+          discount: Number(Number(b.discount).toFixed(2)),
+          grandTotal: Number(Number(b.totalAmount).toFixed(2)),
+          billedBy: b.user.name,
+        });
+        currentRow++;
+      } else {
+        b.billItems.forEach((item) => {
+          worksheet.addRow({
+            billNumber: b.billNumber,
+            date: new Date(b.createdAt),
+            brandName: item.product.brand || "-",
+            productName: item.product.name,
+            imeiNumber: item.productUnit ? item.productUnit.imeiNumber : "NA",
+            customerName: b.customer?.name || "Guest",
+            customerPhone: b.customer?.phone || "-",
+            paymentMode: b.paymentMode.toUpperCase(),
+            subtotal: Number(Number(Number(b.totalAmount) + Number(b.discount)).toFixed(2)),
+            discount: Number(Number(b.discount).toFixed(2)),
+            grandTotal: Number(Number(b.totalAmount).toFixed(2)),
+            billedBy: b.user.name,
+          });
+          currentRow++;
+        });
+
+        // Merge cells if there are multiple items
+        if (itemsCount > 1) {
+          const columnsToMerge = [
+            "billNumber",
+            "date",
+            "customerName",
+            "customerPhone",
+            "paymentMode",
+            "subtotal",
+            "discount",
+            "grandTotal",
+            "billedBy"
+          ];
+
+          columnsToMerge.forEach((colKey) => {
+            const colIndex = worksheet.columns.findIndex(c => c.key === colKey) + 1;
+            worksheet.mergeCells(startRow, colIndex, endRow, colIndex);
+          });
+        }
+      }
+    });
+
+    // Style the Header Row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { name: "Arial", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF2563EB" }, // Royal blue background
+    };
+    headerRow.alignment = { horizontal: "center", vertical: "middle" };
+    headerRow.height = 25;
+
+    // Apply formatting and alignment dynamically per column type
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // Skip header formatting here
+      row.height = 20; // Taller cells for clean vertical alignment
+      row.font = { name: "Arial", size: 10 };
+
+      row.eachCell((cell, colNumber) => {
+        // Center all cell data as requested
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+
+        const colKey = worksheet.columns[colNumber - 1].key;
+
+        if (colKey === "billNumber") {
+          cell.numFmt = "@"; // Text format to preserve things like QS-100 or standard strings
+        } else if (colKey === "date") {
+          cell.numFmt = "dd/mm/yyyy hh:mm AM/PM"; // Exact date format
+        } else if (colKey === "customerPhone") {
+          cell.numFmt = "@"; // Text format (stops scientific notation in Excel)
+          if (cell.value && cell.value !== "-") {
+            cell.value = cell.value.toString(); // Ensure string type
+          }
+        } else if (colKey === "subtotal" || colKey === "discount" || colKey === "grandTotal") {
+          // Indian Rupee styling but keep it centered
+          cell.numFmt = "₹#,##0.00"; 
+        }
+      });
+    });
+
+    // Calculate column widths dynamically based on length of maximum field value
+    worksheet.columns.forEach((column) => {
+      let maxLen = column.header ? column.header.length : 10;
+
+      column.eachCell?.((cell, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header cell
+        let valStr = "";
+        if (cell.value !== null && cell.value !== undefined) {
+          if (cell.value instanceof Date) {
+            valStr = "DD/MM/YYYY HH:MM AM/PM"; // Use sample string for length calculation
+          } else if (typeof cell.value === "number" && (column.key === "subtotal" || column.key === "discount" || column.key === "grandTotal")) {
+            valStr = `₹${cell.value.toFixed(2)}`; // Include Rupee symbol and decimals for length
+          } else {
+            valStr = cell.value.toString();
+          }
+        }
+        if (valStr.length > maxLen) {
+          maxLen = valStr.length;
+        }
+      });
+
+      // Add extra padding dynamically for clear visibility (accounting for font variations)
+      column.width = maxLen + 4; 
+    });
+
+    // Write buffer and stream to client
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    return new Response(buffer, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": `attachment; filename=sales_report_${fileSuffix}.xlsx`,
+      },
+    });
+  } catch (error) {
+    console.error("Error exporting excel:", error);
+    return new Response("Failed to export sales data", { status: 500 });
+  }
+}

@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide Next.js Dev Indicator completely */
+#next-route-announcer,
+[data-nextjs-scroll-focus-boundary],
+.nextjs-toast-errors-parent,
+#nextjs-dev-overlay,
+nextjs-portal,
+.__next-disclaimer,
+[data-nextjs-dev-indicator],
+nextjs-dev-indicator,
+div[data-nextjs-dev-indicator] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

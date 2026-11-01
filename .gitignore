@@ -1,0 +1,8 @@
+# WhatsApp session credentials (sensitive — never commit)
+session_auth_info/
+/whatsapp-bot/
+
+# Sensitive credentials & recovery codes
+hostinger-recovery-codes.txt
+*-recovery-codes.txt
+*.recovery-codes*
