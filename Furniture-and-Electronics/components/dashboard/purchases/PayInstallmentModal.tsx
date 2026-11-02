@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Modal } from "@/components/ui/modal";
 import { FaTimes, FaMoneyBillWave, FaCheckCircle } from "react-icons/fa";
 import { Purchase, PurchasePaymentMode } from "@/types/purchase";
 import { recordPurchaseInstallment } from "@/lib/api/purchase";
@@ -64,8 +65,11 @@ export default function PayInstallmentModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+    <Modal
+      isOpen={isOpen && Boolean(purchase)}
+      onClose={onClose}
+      className="bg-[#F4F3F0] rounded-2xl max-w-md w-full shadow-2xl border border-[#DEDAD3] overflow-hidden"
+    >
         {/* Header */}
         <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-amber-50/60">
           <div className="flex items-center gap-2">
@@ -218,8 +222,7 @@ export default function PayInstallmentModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </Modal>
   );
 }
 

@@ -117,10 +117,10 @@ export default function BookingCard({
     badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
   } else if (diffDays === -1) {
     relativeBadge = "1d Overdue";
-    badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
+    badgeColor = "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]";
   } else if (diffDays < -1) {
     relativeBadge = `${Math.abs(diffDays)}d Overdue`;
-    badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
+    badgeColor = "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]";
   } else if (diffDays <= 7) {
     relativeBadge = `In ${diffDays} days`;
     badgeColor = "bg-blue-50 text-blue-700 border-blue-200";
@@ -130,7 +130,7 @@ export default function BookingCard({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200/90 shadow-sm hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between">
+    <div className="bg-[#F5F2ED]/95 backdrop-blur-md rounded-2xl border border-[#E5DFD7] shadow-sm hover:shadow-md hover:border-[#D5CDC3] transition-all duration-200 p-5 flex flex-col justify-between">
       <div>
         {/* Header: Symmetrical Top Bar */}
         <div className="flex items-center justify-between gap-2 mb-3">
@@ -171,10 +171,12 @@ export default function BookingCard({
             </button>
 
             <span
-              className={`inline-flex items-center h-7 px-2.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border ${
-                booking.status === "PARTIALLY_DELIVERED"
-                  ? "bg-amber-50 text-amber-800 border-amber-300"
-                  : "bg-blue-50 text-blue-800 border-blue-200"
+              className={`inline-flex items-center h-7 px-2.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider ${
+                booking.status === "COMPLETED"
+                  ? "bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                  : booking.status === "PARTIALLY_DELIVERED"
+                  ? "bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                  : "bg-[#F1F5F9] text-[#334155] border border-[#94A3B8] border-b-[#64748B] shadow-[0_2px_4px_rgba(71,85,105,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
               }`}
             >
               {booking.status.replace("_", " ")}
@@ -233,12 +235,12 @@ export default function BookingCard({
             <span>Reserved Items ({booking.bookingItems.length})</span>
             <div className="flex gap-1.5">
               {furnitureItems.length > 0 && (
-                <span className="bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 font-semibold text-[11px]">
+                <span className="bg-[#235347] text-white px-2.5 py-0.5 rounded-md border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold text-[11px]">
                   {furnitureItems.length} Furniture
                 </span>
               )}
               {electronicsItems.length > 0 && (
-                <span className="bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 font-semibold text-[11px]">
+                <span className="bg-[#093F52] text-white px-2.5 py-0.5 rounded-md border border-[#105269] border-b-[#052531] shadow-[0_2px_0_#052531,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold text-[11px]">
                   {electronicsItems.length} Electronics
                 </span>
               )}
@@ -249,20 +251,20 @@ export default function BookingCard({
             {booking.bookingItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between py-1 px-2 rounded bg-gray-50/70 border border-gray-100"
+                className="flex items-center justify-between py-1 px-2 rounded bg-gray-50/70 border border-gray-100 gap-2"
               >
-                <span className="text-gray-800 truncate max-w-[210px]">
+                <span className="text-gray-800 truncate min-w-0 flex-1 text-xs">
                   {item.product.name} (x{item.quantity})
                 </span>
-                <span className="font-medium text-gray-600">
+                <span className="font-medium text-gray-600 shrink-0">
                   {item.isBilled ? (
-                    <span className="text-emerald-700 font-bold text-[11px]">✓ Invoiced</span>
+                    <span className="text-[#15803D] font-bold text-[11px] whitespace-nowrap">✓ Invoiced</span>
                   ) : item.department === "ELECTRONICS" ? (
-                    <span className="text-amber-800 font-semibold bg-amber-50 px-1.5 py-0.5 rounded text-[10px] border border-amber-200">
+                    <span className="text-[#854D0E] font-bold bg-[#FEF9E7] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] px-2 py-0.5 rounded text-[10px] whitespace-nowrap inline-block">
                       Pending Delivery
                     </span>
                   ) : (
-                    <span>₹{Number(item.lineTotal).toLocaleString("en-IN")}</span>
+                    <span className="whitespace-nowrap text-xs">₹{Number(item.lineTotal).toLocaleString("en-IN")}</span>
                   )}
                 </span>
               </div>
@@ -275,10 +277,10 @@ export default function BookingCard({
       <div className="border-t border-gray-100 pt-3 mt-2">
         <div className="flex justify-between items-baseline mb-1 text-xs">
           <span className="text-gray-500 font-medium">
-            Advance: <strong className="text-emerald-700 font-bold">₹{advance.toLocaleString("en-IN")}</strong> ({paidPercent}%)
+            Advance: <strong className="text-[#15803D] font-bold">₹{advance.toLocaleString("en-IN")}</strong> ({paidPercent}%)
           </span>
           <span className="text-gray-500 font-medium">
-            Due: <strong className="text-rose-700 font-bold">₹{liveRemainingDue.toLocaleString("en-IN")}</strong>
+            Due: <strong className="text-[#780000] font-bold">₹{liveRemainingDue.toLocaleString("en-IN")}</strong>
           </span>
         </div>
 
@@ -301,7 +303,7 @@ export default function BookingCard({
           </button>
         ) : (
           <div className="space-y-2">
-            <div className="text-center py-1 bg-emerald-50 text-emerald-800 rounded-md text-[11px] font-bold border border-emerald-200">
+            <div className="text-center py-1.5 bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] rounded-md text-[11px] font-bold">
               ✓ All Delivery Invoices Generated
             </div>
             {onCompleteBooking && (

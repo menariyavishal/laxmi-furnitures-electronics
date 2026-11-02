@@ -168,7 +168,7 @@ export default function ProductPicker({ onAddItem }: ProductPickerProps) {
             }}
             className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
               selectedDept === "FURNITURE"
-                ? "bg-amber-600 text-white shadow-sm"
+                ? "bg-[#8EB69B] text-white font-bold shadow-[0_2px_0_#5B7E67,0_3px_5px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-[#7BA289] border-b-[#5B7E67]"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
@@ -183,7 +183,7 @@ export default function ProductPicker({ onAddItem }: ProductPickerProps) {
             }}
             className={`flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
               selectedDept === "ELECTRONICS"
-                ? "bg-blue-600 text-white shadow-sm"
+                ? "bg-[#216A85] text-white font-bold shadow-[0_2px_0_#144E63,0_3px_5px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)] border border-[#2D7F9E] border-b-[#144E63]"
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >

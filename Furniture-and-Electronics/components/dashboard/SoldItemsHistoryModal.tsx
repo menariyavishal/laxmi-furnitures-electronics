@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X, Search, Loader2 } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
 
 interface Category {
   id: number;
@@ -99,7 +100,6 @@ export default function SoldItemsHistoryModal({
     setItems([]);
   }, [parentCategory, subCategory, fromDate, toDate]);
 
-  if (!isOpen) return null;
 
   const parents = categories.filter(c => !c.parentCategoryId);
   const subs = parentCategory 
@@ -107,8 +107,11 @@ export default function SoldItemsHistoryModal({
     : [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="bg-[#F8F6F2] rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-[#E8E2D8]"
+    >
         
         {/* Header */}
         <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50/50">
@@ -263,7 +266,6 @@ export default function SoldItemsHistoryModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
-  );
+      </Modal>
+    );
 }

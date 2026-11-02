@@ -3,7 +3,7 @@
 
 **Version:** 2.0 (Production Release)  
 **Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
-**Proprietor:** Lalit Menariya  
+**Proprietor:** Suraj Menariya  
 
 ---
 

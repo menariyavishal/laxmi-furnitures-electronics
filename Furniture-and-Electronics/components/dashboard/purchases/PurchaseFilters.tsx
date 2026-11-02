@@ -99,8 +99,8 @@ export default function PurchaseFilters({
           onClick={() => onStatusFilterChange("ALL")}
           className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
             statusFilter === "ALL"
-              ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-              : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+              ? "bg-[#F1F5F9] text-[#334155] border border-[#94A3B8] border-b-[#64748B] shadow-[0_2px_4px_rgba(71,85,105,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] brightness-95"
+              : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
           }`}
         >
           <span className="inline-block w-2 h-2 rounded-full mr-1.5 bg-blue-400"></span>
@@ -112,7 +112,7 @@ export default function PurchaseFilters({
           onClick={() => onStatusFilterChange("PENDING_DUE")}
           className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
             statusFilter === "PENDING_DUE"
-              ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+              ? "bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
               : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
           }`}
         >
@@ -125,7 +125,7 @@ export default function PurchaseFilters({
           onClick={() => onStatusFilterChange("PAID")}
           className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
             statusFilter === "PAID"
-              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+              ? "bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
               : "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
           }`}
         >

@@ -53,7 +53,7 @@ export default function PurchaseKPICards({ kpis, loading }: PurchaseKPICardsProp
       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex items-center justify-between">
         <div>
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Paid on Pending Bills</p>
-          <p className="text-xl font-black text-emerald-600 mt-1">
+          <p className="text-xl font-black text-[#15803D] mt-1">
             ₹ {kpis.totalPaidAmount.toLocaleString("en-IN")}
           </p>
           <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">
@@ -68,8 +68,8 @@ export default function PurchaseKPICards({ kpis, loading }: PurchaseKPICardsProp
       {/* 3. Total Due to Vendors (Accounts Payable) */}
       <div className="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/20 shadow-xs flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">Outstanding Dues</p>
-          <p className="text-xl font-black text-amber-600 mt-1">
+          <p className="text-xs font-bold text-[#780000] uppercase tracking-wider">Outstanding Dues</p>
+          <p className="text-xl font-black text-[#780000] mt-1">
             ₹ {kpis.totalDueAmount.toLocaleString("en-IN")}
           </p>
           <p className="text-[11px] text-amber-700 font-bold mt-0.5">

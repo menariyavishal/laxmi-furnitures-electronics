@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Modal } from "@/components/ui/modal";
 import { FaTimes, FaFileInvoiceDollar, FaCheckCircle, FaExclamationCircle, FaCalendarAlt, FaExclamationTriangle, FaBoxes } from "react-icons/fa";
 import { Purchase } from "@/types/purchase";
 
@@ -30,8 +31,11 @@ export default function PurchaseDetailModal({
   const isDue = Number(purchase.dueAmount) > 0;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+    <Modal
+      isOpen={isOpen && Boolean(purchase)}
+      onClose={onClose}
+      className="bg-[#F4F3F0] rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-[#DEDAD3] overflow-hidden"
+    >
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
           <div className="flex items-center gap-2.5">
@@ -114,19 +118,19 @@ export default function PurchaseDetailModal({
               </span>
               <div className="mt-1">
                 {purchase.paymentStatus === "PAID" && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]">
                     <FaCheckCircle className="w-3 h-3 text-emerald-600" />
                     FULLY SETTLED
                   </span>
                 )}
                 {purchase.paymentStatus === "PARTIAL" && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]">
                     <FaExclamationCircle className="w-3 h-3 text-amber-600" />
                     PARTIAL DUE
                   </span>
                 )}
                 {purchase.paymentStatus === "UNPAID" && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]">
                     <FaExclamationCircle className="w-3 h-3 text-red-600" />
                     UNPAID
                   </span>
@@ -199,7 +203,7 @@ export default function PurchaseDetailModal({
             </div>
             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
               <span className="text-[10px] font-bold text-emerald-700 uppercase block">Total Paid</span>
-              <span className="text-base font-black text-emerald-700 font-mono mt-0.5 block">
+              <span className="text-base font-black text-[#15803D] font-mono mt-0.5 block">
                 ₹ {Number(purchase.paidAmount).toLocaleString("en-IN")}
               </span>
             </div>
@@ -250,7 +254,7 @@ export default function PurchaseDetailModal({
                           ) : null}
                           <span className="text-gray-500">{pmt.notes || "—"}</span>
                         </td>
-                        <td className="py-2 px-3 text-right font-black text-emerald-600 font-mono">
+                        <td className="py-2 px-3 text-right font-black text-[#15803D] font-mono">
                           ₹ {Number(pmt.amountPaid).toLocaleString("en-IN")}
                         </td>
                       </tr>
@@ -316,8 +320,7 @@ export default function PurchaseDetailModal({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }
 

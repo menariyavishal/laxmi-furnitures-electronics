@@ -11,6 +11,7 @@ import CategorySelector from "@/components/dashboard/CategorySelector";
 import { FaSpinner } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import InventoryLoading from "./loading";
+import { Modal } from "@/components/ui/modal";
 
 export default function InventoryPage() {
   const router = useRouter();
@@ -398,8 +399,8 @@ export default function InventoryPage() {
                     <div className="flex flex-col gap-2">
                       <span className={`px-2 inline-flex w-fit text-xs leading-5 font-semibold rounded-full ${
                         product.quantityInStock <= product.lowStockThreshold 
-                          ? "bg-red-100 text-red-800" 
-                          : "bg-green-100 text-green-800"
+                          ? "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]" 
+                          : "bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
                       }`}>
                         {product.quantityInStock}
                       </span>
@@ -476,9 +477,11 @@ export default function InventoryPage() {
       )}
 
       {/* Edit Product Modal */}
-      {editingProduct && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full h-[85vh] min-h-[600px] p-8 shadow-2xl flex flex-col overflow-hidden">
+      <Modal
+        isOpen={Boolean(editingProduct)}
+        onClose={() => setEditingProduct(null)}
+        className="bg-[#F7F5F0] rounded-2xl max-w-4xl w-full h-[85vh] min-h-[600px] p-8 shadow-2xl flex flex-col overflow-hidden border border-[#E5DFD7]"
+      >
             <div className="flex justify-between items-center mb-6 border-b pb-3 flex-shrink-0">
               <h3 className="text-xl font-bold text-gray-800">Edit Product Details</h3>
               <button
@@ -594,9 +597,7 @@ export default function InventoryPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 }

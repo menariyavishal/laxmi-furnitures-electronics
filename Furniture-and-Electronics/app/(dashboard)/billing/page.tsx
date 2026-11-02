@@ -7,6 +7,7 @@ import { useReactToPrint } from "react-to-print";
 import { useAuth } from "@/hooks/useAuth";
 
 import InvoiceTemplate from "@/components/dashboard/InvoiceTemplate";
+import { Modal } from "@/components/ui/modal";
 import { FaTimes } from "react-icons/fa";
 
 export default function BillingPage() {
@@ -78,6 +79,15 @@ export default function BillingPage() {
 
   // Created Bill for Print Modal
   const [createdBill, setCreatedBill] = useState<any>(null);
+  const [lastCreatedBill, setLastCreatedBill] = useState<any>(null);
+
+  useEffect(() => {
+    if (createdBill) {
+      setLastCreatedBill(createdBill);
+    }
+  }, [createdBill]);
+
+  const activeCreatedBill = createdBill || lastCreatedBill;
   const [showPrintModal, setShowPrintModal] = useState(false);
 
   // Scanner State
@@ -376,7 +386,7 @@ export default function BillingPage() {
     <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 h-[calc(100vh-8rem)]">
       
       {/* LEFT: Live Invoice Preview */}
-      <div className="xl:col-span-2 flex flex-col justify-start bg-gray-50 border border-gray-200 p-4 rounded-xl overflow-y-auto max-h-full">
+      <div className="xl:col-span-2 flex flex-col justify-start bg-[#F5F2ED]/95 backdrop-blur-md border border-[#E5DFD7] p-4 rounded-2xl shadow-sm overflow-y-auto max-h-full">
         <div className="flex justify-between items-center mb-3">
           <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Live Bill Preview</span>
           <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full font-bold">Real-time update</span>
@@ -402,7 +412,7 @@ export default function BillingPage() {
       </div>
 
       {/* RIGHT: Input form & Terminal */}
-      <div className="xl:col-span-3 bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full overflow-y-auto">
+      <div className="xl:col-span-3 bg-[#F5F2ED]/95 backdrop-blur-md rounded-2xl shadow-sm border border-[#E5DFD7] p-6 flex flex-col h-full overflow-y-auto">
         <h2 className="text-xl font-bold mb-4 text-black border-b pb-2 flex items-center justify-between">
           <span>POS Billing Terminal</span>
           <span className="text-xs text-red-500 font-normal">* Required fields</span>
@@ -821,9 +831,13 @@ export default function BillingPage() {
       </div>
 
       {/* PRINT RECEIPT MODAL */}
-      {showPrintModal && createdBill && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full flex flex-col max-h-[90vh]">
+      <Modal
+        isOpen={Boolean(showPrintModal && createdBill)}
+        onClose={closePrintModal}
+        className="bg-[#FAF6F0] rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[90vh] overflow-hidden border border-[#E5DFD7]"
+      >
+        {activeCreatedBill && (
+          <>
             <div className="px-6 py-4 bg-gray-50 border-b flex justify-between items-center rounded-t-lg">
               <h3 className="text-lg font-bold text-gray-900">Tax Invoice Generated Successfully</h3>
               <button
@@ -843,21 +857,21 @@ export default function BillingPage() {
               >
                 <InvoiceTemplate
                   isDraft={false}
-                  billNumber={createdBill.billNumber}
-                  createdAt={createdBill.createdAt}
-                  customerName={createdBill.customer?.name || customerName || "Guest Customer"}
-                  customerAddress={createdBill.customer?.address || customerAddress || undefined}
-                  customerPhone={createdBill.customer?.phone || phone}
-                  cartItems={createdBill.billItems}
-                  subtotal={parseFloat(createdBill.subtotal)}
-                  grossTotal={parseFloat(createdBill.totalAmount)}
-                  discount={parseFloat(createdBill.discount)}
-                  totalAmount={parseFloat(createdBill.totalAmount)}
-                  sgstPercent={createdBill.sgstPercent?.toString()}
-                  cgstPercent={createdBill.cgstPercent?.toString()}
-                  paidAmount={parseFloat(createdBill.paidAmount)}
-                  dueAmount={parseFloat(createdBill.dueAmount)}
-                  paymentMode={createdBill.paymentMode}
+                  billNumber={activeCreatedBill.billNumber}
+                  createdAt={activeCreatedBill.createdAt}
+                  customerName={activeCreatedBill.customer?.name || customerName || "Guest Customer"}
+                  customerAddress={activeCreatedBill.customer?.address || customerAddress || undefined}
+                  customerPhone={activeCreatedBill.customer?.phone || phone}
+                  cartItems={activeCreatedBill.billItems}
+                  subtotal={parseFloat(activeCreatedBill.subtotal)}
+                  grossTotal={parseFloat(activeCreatedBill.totalAmount)}
+                  discount={parseFloat(activeCreatedBill.discount)}
+                  totalAmount={parseFloat(activeCreatedBill.totalAmount)}
+                  sgstPercent={activeCreatedBill.sgstPercent?.toString()}
+                  cgstPercent={activeCreatedBill.cgstPercent?.toString()}
+                  paidAmount={parseFloat(activeCreatedBill.paidAmount)}
+                  dueAmount={parseFloat(activeCreatedBill.dueAmount)}
+                  paymentMode={activeCreatedBill.paymentMode}
                 />
               </div>
             </div>
@@ -876,13 +890,15 @@ export default function BillingPage() {
                 Print Invoice
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
       {/* UPI QR Modal */}
-      {showUpiModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-2xl relative w-80 h-80 flex flex-col animate-fade-in border border-gray-100">
+      <Modal
+        isOpen={showUpiModal}
+        onClose={() => setShowUpiModal(false)}
+        className="bg-[#FAF6F0] p-6 rounded-2xl shadow-2xl relative w-80 h-80 flex flex-col border border-[#E5DFD7]"
+      >
             <button
               onClick={() => setShowUpiModal(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50"
@@ -907,9 +923,7 @@ export default function BillingPage() {
                 <span className="text-xs font-semibold text-gray-700">Waiting for payment...</span>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
     </div>
   );

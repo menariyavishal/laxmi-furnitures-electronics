@@ -1,3 +1,4 @@
+import { Modal } from "@/components/ui/modal";
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -161,8 +162,11 @@ export default function CameraScanner({ onScanSuccess, onClose }: CameraScannerP
           pointer-events: none;
         }
       `}</style>
-      <div className="fixed inset-0 bg-gray-900/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        className="bg-[#FAF6F0] rounded-2xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col border border-[#E5DFD7]"
+      >
           {/* Header */}
           <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
             <h3 className="text-base font-semibold text-gray-800">Scan Barcode / IMEI</h3>
@@ -207,8 +211,7 @@ export default function CameraScanner({ onScanSuccess, onClose }: CameraScannerP
               </p>
             )}
           </div>
-        </div>
-      </div>
+      </Modal>
     </>
   );
 }

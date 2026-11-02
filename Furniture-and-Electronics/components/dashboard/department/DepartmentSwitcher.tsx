@@ -21,7 +21,7 @@ export default function DepartmentSwitcher({
 
   return (
     <div
-      className={`inline-flex items-center p-1 bg-gray-100 rounded-xl border border-gray-200/80 shadow-inner ${className}`}
+      className={`inline-flex items-center p-1 bg-[#131F33] rounded-xl border border-white/[0.08] shadow-inner ${className}`}
       role="group"
       aria-label="Select Store Division"
     >
@@ -29,14 +29,14 @@ export default function DepartmentSwitcher({
         const item = DEPARTMENTS[key];
         const isActive = department === key;
 
-        let activeClasses = "bg-white text-gray-900 shadow-sm border border-gray-200/60";
+        let activeClasses = "bg-[#283041] text-white shadow-md border border-white/[0.1] font-semibold";
         if (isActive) {
           if (key === "FURNITURE") {
-            activeClasses = "bg-amber-600 text-white shadow-md shadow-amber-200 border-amber-600 font-semibold";
+            activeClasses = "bg-[#8EB69B] text-white font-bold shadow-[0_2.5px_0_#5B7E67,0_4px_6px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.45)] border border-[#7BA289] border-b-[#5B7E67]";
           } else if (key === "ELECTRONICS") {
-            activeClasses = "bg-blue-600 text-white shadow-md shadow-blue-200 border-blue-600 font-semibold";
+            activeClasses = "bg-[#216A85] text-white font-bold shadow-[0_2.5px_0_#144E63,0_4px_6px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.45)] border border-[#2D7F9E] border-b-[#144E63]";
           } else {
-            activeClasses = "bg-slate-800 text-white shadow-md shadow-slate-200 border-slate-800 font-semibold";
+            activeClasses = "bg-[#CCD0CF] text-[#0B1421] font-bold shadow-[0_2.5px_0_#9BA5A8,0_4px_6px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.7)] border border-[#B8C0C2] border-b-[#9BA5A8]";
           }
         }
 
@@ -48,7 +48,7 @@ export default function DepartmentSwitcher({
             className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs md:text-sm rounded-lg font-medium transition-all duration-200 ${
               isActive
                 ? activeClasses
-                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/80 border border-transparent"
+                : "text-slate-300 hover:text-white hover:bg-white/[0.06] border border-transparent"
             }`}
           >
             <span className="text-sm md:text-base">{item.icon}</span>

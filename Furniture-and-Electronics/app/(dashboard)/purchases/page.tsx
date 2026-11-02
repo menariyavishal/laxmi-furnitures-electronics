@@ -161,7 +161,7 @@ export default function PurchasesPage() {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center text-xs font-semibold text-gray-600 bg-white px-4 py-3 rounded-xl border border-gray-200">
+        <div className="flex justify-between items-center text-xs font-semibold text-[#6E6862] bg-[#F5F2ED]/95 backdrop-blur-md px-4 py-3 rounded-2xl border border-[#E5DFD7] shadow-sm">
           <span>
             Page {page} of {totalPages}
           </span>

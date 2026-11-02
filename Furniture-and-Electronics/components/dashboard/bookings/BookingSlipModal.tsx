@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
+import { Modal } from "@/components/ui/modal";
 import { BookingResponse } from "@/types/booking";
 import { FaPrint, FaTimes, FaCamera, FaSearchPlus } from "react-icons/fa";
 import { extractDesignPhotos } from "@/lib/booking-photos";
@@ -97,14 +98,11 @@ export default function BookingSlipModal({
   const designPhotos = extractDesignPhotos(booking.notes);
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 print:p-0 print:bg-white"
+    <Modal
+      isOpen={isOpen && Boolean(booking)}
+      onClose={onClose}
+      className="bg-[#FAF6F0] rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-[#EADFCF] print:max-h-none print:shadow-none print:rounded-none"
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden print:max-h-none print:shadow-none print:rounded-none"
-      >
         {/* Fixed Header Controls (Always visible, docked at top, hidden in print) */}
         <div className="sticky top-0 z-10 flex-shrink-0 flex justify-between items-center px-6 py-3.5 bg-gray-50 border-b border-gray-200 print:hidden">
           <div className="flex items-center gap-2">
@@ -179,7 +177,7 @@ export default function BookingSlipModal({
                 <>
                   <p className="text-gray-500 text-[11px]">Delivery Status:</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-black bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]">
                       ✓ DELIVERED
                     </span>
                     <span className="text-gray-700 font-bold text-xs">
@@ -296,9 +294,9 @@ export default function BookingSlipModal({
                       {electronicsBills.map((b) => b.billNumber).join(", ")}
                     </span>
                   ) : isDelivered ? (
-                    <span className="font-bold text-emerald-700">Fulfilled on Delivery</span>
+                    <span className="font-bold text-[#15803D]">Fulfilled on Delivery</span>
                   ) : (
-                    <span className="font-bold text-amber-800">Pending Delivery</span>
+                    <span className="font-bold text-[#854D0E]">Pending Delivery</span>
                   )}
                 </div>
               </div>
@@ -324,7 +322,7 @@ export default function BookingSlipModal({
                   <span className="font-bold text-gray-900">₹{total.toLocaleString("en-IN")}</span>
                 </div>
               )}
-              <div className="flex justify-between text-emerald-700">
+              <div className="flex justify-between text-[#15803D]">
                 <span className="font-semibold">Advance Received:</span>
                 <span className="font-bold">₹{advance.toLocaleString("en-IN")}</span>
               </div>
@@ -334,7 +332,7 @@ export default function BookingSlipModal({
                 </span>
                 <span
                   className={`font-extrabold ${
-                    balance <= 0 ? "text-emerald-700" : "text-blue-950"
+                    balance <= 0 ? "text-[#15803D]" : "text-[#780000]"
                   }`}
                 >
                   {balance <= 0 ? "₹0 (Fully Settled)" : `₹${balance.toLocaleString("en-IN")}`}
@@ -413,7 +411,6 @@ export default function BookingSlipModal({
             </div>
           </div>
         </div>
-      </div>
 
       {/* Full-Size Design Image Lightbox Modal */}
       {previewImageUrl && (
@@ -452,6 +449,6 @@ export default function BookingSlipModal({
           </div>
         </div>
       )}
-    </div>
+    </Modal>
   );
 }

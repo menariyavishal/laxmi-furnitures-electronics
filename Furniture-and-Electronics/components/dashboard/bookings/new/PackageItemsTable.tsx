@@ -218,8 +218,8 @@ export default function PackageItemsTable({
                         <span
                           className={`p-1.5 rounded-md text-xs ${
                             isFurniture
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-blue-100 text-blue-800"
+                              ? "bg-[#235347] text-white border border-[#2F6859] border-b-[#14352D] shadow-[0_1.5px_0_#14352D,inset_0_1px_0_rgba(255,255,255,0.25)]"
+                              : "bg-[#093F52] text-white border border-[#105269] border-b-[#052531] shadow-[0_1.5px_0_#052531,inset_0_1px_0_rgba(255,255,255,0.25)]"
                           }`}
                         >
                           {isFurniture ? <FaCouch className="w-3 h-3" /> : <FaTv className="w-3 h-3" />}

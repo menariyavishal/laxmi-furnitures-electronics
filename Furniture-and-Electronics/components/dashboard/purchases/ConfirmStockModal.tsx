@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Modal } from "@/components/ui/modal";
 import { FaBoxes, FaExclamationTriangle, FaCheck, FaTimes, FaArrowRight } from "react-icons/fa";
 import { PurchaseItemInput, Department } from "@/types/purchase";
 
@@ -28,8 +29,11 @@ export default function ConfirmStockModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/65 backdrop-blur-xs flex items-center justify-center z-60 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-gray-200 overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="bg-[#F4F3F0] rounded-2xl max-w-2xl w-full shadow-2xl border border-[#DEDAD3] overflow-hidden flex flex-col max-h-[90vh]"
+    >
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-amber-50/60">
           <div className="flex items-center gap-2.5">
@@ -180,8 +184,7 @@ export default function ConfirmStockModal({
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }
 

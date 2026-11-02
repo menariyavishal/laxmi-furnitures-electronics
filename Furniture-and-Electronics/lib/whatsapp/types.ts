@@ -33,11 +33,11 @@ export interface BookingNewTemplateData {
   bookingNumber: string;
   expectedDeliveryDate: string;
   eventDate?: string | null;
-  furnitureCount: number;
-  furnitureSubtotal: number;
+  furnitureCount?: number;
+  furnitureSubtotal?: number;
   furnitureBillNumber?: string | null;
-  electronicsCount: number;
-  electronicsSubtotal: number;
+  electronicsCount?: number;
+  electronicsSubtotal?: number;
   totalAmount: number;
   advancePaid: number;
   remainingBalance: number;

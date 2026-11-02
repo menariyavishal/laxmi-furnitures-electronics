@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import StaffManagementLoading from "./loading";
 import { useRouter } from "next/navigation";
+import { Modal } from "@/components/ui/modal";
 
 interface User {
   id: number;
@@ -267,9 +268,11 @@ export default function StaffManagementPage() {
       </div>
 
       {/* MODAL FORM */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        className="bg-[#F5F2ED] rounded-2xl shadow-2xl max-w-md w-full p-6 border border-[#E5DFD7]"
+      >
             <h3 className="text-lg font-bold text-gray-900 mb-4">
               {isEditing ? "Edit Account Details" : "Create Staff Account"}
             </h3>
@@ -359,9 +362,7 @@ export default function StaffManagementPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 }

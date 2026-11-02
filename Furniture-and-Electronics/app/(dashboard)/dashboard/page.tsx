@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { QRCodeSVG } from 'qrcode.react';
 import SoldItemsHistoryModal from "@/components/dashboard/SoldItemsHistoryModal";
+import { Modal } from "@/components/ui/modal";
 import { FaWhatsapp } from "react-icons/fa";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
@@ -373,14 +374,14 @@ export default function DashboardPage() {
 
       {/* OVERDUE PAYMENTS REMINDER COMPONENT */}
       {overduePayments.length > 0 && (
-        <div className="bg-red-50 border border-red-200 p-6 rounded-xl shadow-sm">
+        <div className="bg-[#FDF2F2] border border-[#780000]/20 p-6 rounded-2xl shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-red-100 text-red-600 rounded-lg">
+            <div className="p-2 bg-[#FEE2E2] text-[#780000] rounded-lg">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-red-800">Urgent: Overdue Payments (15+ Days)</h3>
+            <h3 className="text-lg font-bold text-[#780000]">Urgent: Overdue Payments (15+ Days)</h3>
           </div>
           
           <div className="max-h-[340px] overflow-y-auto pr-2 custom-scrollbar">
@@ -439,7 +440,7 @@ export default function DashboardPage() {
                         </Link>
                       </div>
                       <div className="text-sm text-gray-600 mb-1">{bill.customer?.phone || bill.customerPhone || "No Phone"}</div>
-                      <div className="text-sm font-black text-red-600">Due: ₹{parseFloat(bill.dueAmount).toFixed(2)}</div>
+                      <div className="text-sm font-black text-[#780000]">Due: ₹{parseFloat(bill.dueAmount).toFixed(2)}</div>
                       <div className="text-xs text-gray-500 mt-1">Bill Date: {new Date(bill.createdAt).toLocaleDateString()}</div>
                     </div>
                     
@@ -809,9 +810,11 @@ export default function DashboardPage() {
         </div>
       </div>
       {/* Official WhatsApp QR Connection Modal */}
-      {showQrModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 transform transition-all scale-100">
+      <Modal
+        isOpen={showQrModal}
+        onClose={handleCancelPairing}
+        className="bg-[#F2F7F4] rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-[#D2E3D8]"
+      >
             {/* Modal Header */}
             <div className="px-6 py-4 bg-green-600 text-white flex justify-between items-center">
               <h3 className="font-extrabold text-lg flex items-center gap-2">
@@ -872,14 +875,14 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Daily Sales Breakdown Modal */}
-      {showTodaySalesModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[88vh]">
+      <Modal
+        isOpen={showTodaySalesModal}
+        onClose={() => setShowTodaySalesModal(false)}
+        className="bg-[#F7F5F0] rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[88vh] border border-[#E5DFD7]"
+      >
             {/* Header with Date Selector */}
             <div className="p-5 sm:p-6 border-b border-gray-100 bg-gray-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
@@ -1037,7 +1040,7 @@ export default function DashboardPage() {
                   Total Sales: ₹{dailySalesData?.totalSales?.toFixed(2) || "0.00"}
                 </span>
                 {dailySalesData?.totalProfit != null ? (
-                  <span className={`text-base sm:text-lg font-black ${dailySalesData.totalProfit > 0 ? 'text-green-600' : dailySalesData.totalProfit < 0 ? 'text-red-500' : 'text-gray-600'}`}>
+                  <span className={`text-base sm:text-lg font-black ${dailySalesData.totalProfit > 0 ? 'text-[#15803D]' : dailySalesData.totalProfit < 0 ? 'text-[#780000]' : 'text-gray-600'}`}>
                     Total Profit: {dailySalesData.totalProfit > 0 ? '+' : ''}₹{dailySalesData.totalProfit.toFixed(2)}
                   </span>
                 ) : (
@@ -1047,9 +1050,7 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       <SoldItemsHistoryModal 
         isOpen={showSoldItemsModal}

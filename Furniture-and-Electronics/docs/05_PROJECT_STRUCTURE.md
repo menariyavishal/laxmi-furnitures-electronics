@@ -95,7 +95,8 @@ app/
     │   ├── route.ts                    # GET / POST advance bookings
     │   ├── upload-design/route.ts      # Supabase photo upload proxy
     │   └── [id]/
-    │       ├── fulfill-electronics/    # Generate delivery invoice for appliances
+    │       ├── invoice/                # Generate delivery invoice for appliances
+    │       ├── complete/               # Settle & complete booking
     │       └── whatsapp/resend/        # Resend Booking Slip via WhatsApp
     ├── categories/route.ts             # Category CRUD
     ├── customers/route.ts              # Customer search & profiling

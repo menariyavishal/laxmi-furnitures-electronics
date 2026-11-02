@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   FaWhatsapp,
@@ -14,6 +14,7 @@ import { fetcher } from "@/lib/fetcher";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useDepartment } from "@/components/dashboard/department/DepartmentContext";
 import DuePaymentsLoading from "./loading";
+import { Modal } from "@/components/ui/modal";
 
 export default function DuePaymentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,6 +47,15 @@ export default function DuePaymentsPage() {
 
   // Multi-stage installment payment modal state
   const [selectedBillForPayment, setSelectedBillForPayment] = useState<any | null>(null);
+  const [activeBillForPayment, setActiveBillForPayment] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (selectedBillForPayment) {
+      setActiveBillForPayment(selectedBillForPayment);
+    }
+  }, [selectedBillForPayment]);
+
+  const currentPaymentBill = selectedBillForPayment || activeBillForPayment;
   const [collectAmount, setCollectAmount] = useState<string>("");
   const [collectPaymentMode, setCollectPaymentMode] = useState<string>("CASH");
   const [paymentNotes, setPaymentNotes] = useState<string>("");
@@ -365,14 +375,16 @@ export default function DuePaymentsPage() {
                           #{bill.billNumber}
                         </Link>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                            (bill.department || "FURNITURE").toUpperCase() === "FURNITURE"
+                              ? "bg-[#235347] text-white border border-[#2F6859] border-b-[#14352D] shadow-[0_1.5px_0_#14352D,inset_0_1px_0_rgba(255,255,255,0.25)]"
+                              : "bg-[#093F52] text-white border border-[#105269] border-b-[#052531] shadow-[0_1.5px_0_#052531,inset_0_1px_0_rgba(255,255,255,0.25)]"
+                          }`}>
                             {(bill.department || "FURNITURE").slice(0, 4)}
                           </span>
                           <span
-                            className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded ${
-                              isUnpaid
-                                ? "bg-red-100 text-red-700 border border-red-200"
-                                : "bg-amber-100 text-amber-800 border border-amber-200"
+                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
+                              isUnpaid ? "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]" : "bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
                             }`}
                           >
                             {isUnpaid ? "UNPAID" : "PARTIAL"}
@@ -382,7 +394,7 @@ export default function DuePaymentsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
                         <div>{new Date(bill.createdAt).toLocaleDateString()}</div>
                         {isOverdue ? (
-                          <div className="text-[10px] text-red-600 font-bold mt-0.5 bg-red-100 px-1.5 py-0.5 rounded inline-block">
+                          <div className="text-[10px] font-bold mt-0.5 bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-2 py-0.5 rounded inline-block">
                             Overdue ({daysPassed} days)
                           </div>
                         ) : (
@@ -402,10 +414,10 @@ export default function DuePaymentsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
                         ₹{parseFloat(bill.totalAmount).toLocaleString("en-IN")}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-emerald-700">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-[#15803D]">
                         ₹{parseFloat(bill.paidAmount).toLocaleString("en-IN")}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-black text-red-600 bg-red-50/30">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-black text-[#780000] bg-red-50/20">
                         ₹{parseFloat(bill.dueAmount).toLocaleString("en-IN")}
                       </td>
 
@@ -451,16 +463,14 @@ export default function DuePaymentsPage() {
         </div>
       </div>
 
-      {/* Collect Due Payment Modal */}
-      {selectedBillForPayment && (
-        <div
-          onClick={handleClosePaymentModal}
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-200"
-          >
+      {/* Collect Due Payment Modal with Spring Animation */}
+      <Modal
+        isOpen={Boolean(selectedBillForPayment)}
+        onClose={handleClosePaymentModal}
+        className="bg-[#F6F4F1] rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-[#E4DFD8]"
+      >
+        {currentPaymentBill && (
+          <>
             {/* Modal Header */}
             <div className="flex justify-between items-center px-6 py-4 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center gap-2">
@@ -470,7 +480,7 @@ export default function DuePaymentsPage() {
                 <div>
                   <h3 className="text-base font-black text-gray-900">Collect Due Payment</h3>
                   <p className="text-xs text-gray-500 font-medium">
-                    Bill #{selectedBillForPayment.billNumber} • {selectedBillForPayment.customer?.name || "Customer"}
+                    Bill #{currentPaymentBill.billNumber} • {currentPaymentBill.customer?.name || "Customer"}
                   </p>
                 </div>
               </div>
@@ -491,19 +501,19 @@ export default function DuePaymentsPage() {
                 <div>
                   <p className="text-[10px] font-bold text-gray-500 uppercase">Total Bill</p>
                   <p className="text-sm font-extrabold text-gray-900 mt-0.5">
-                    ₹{Number(selectedBillForPayment.totalAmount).toLocaleString("en-IN")}
+                    ₹{Number(currentPaymentBill.totalAmount).toLocaleString("en-IN")}
                   </p>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-500 uppercase">Already Paid</p>
                   <p className="text-sm font-extrabold text-emerald-700 mt-0.5">
-                    ₹{Number(selectedBillForPayment.paidAmount).toLocaleString("en-IN")}
+                    ₹{Number(currentPaymentBill.paidAmount).toLocaleString("en-IN")}
                   </p>
                 </div>
                 <div className="bg-red-50/80 rounded-lg py-1 border border-red-200">
                   <p className="text-[10px] font-black text-red-600 uppercase">Current Due</p>
                   <p className="text-sm font-black text-red-700 mt-0.5">
-                    ₹{Number(selectedBillForPayment.dueAmount).toLocaleString("en-IN")}
+                    ₹{Number(currentPaymentBill.dueAmount).toLocaleString("en-IN")}
                   </p>
                 </div>
               </div>
@@ -518,12 +528,12 @@ export default function DuePaymentsPage() {
                     type="button"
                     onClick={() =>
                       setCollectAmount(
-                        parseFloat(selectedBillForPayment.dueAmount || 0).toFixed(0)
+                        parseFloat(currentPaymentBill?.dueAmount || 0).toFixed(0)
                       )
                     }
                     className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline"
                   >
-                    Pay Full (₹{Number(selectedBillForPayment.dueAmount).toLocaleString("en-IN")})
+                    Pay Full (₹{Number(currentPaymentBill?.dueAmount || 0).toLocaleString("en-IN")})
                   </button>
                 </div>
                 <div className="relative">
@@ -533,7 +543,7 @@ export default function DuePaymentsPage() {
                   <input
                     type="number"
                     min="1"
-                    max={parseFloat(selectedBillForPayment.dueAmount || 0)}
+                    max={parseFloat(currentPaymentBill?.dueAmount || 0)}
                     step="any"
                     value={collectAmount}
                     onChange={(e) => {
@@ -587,8 +597,8 @@ export default function DuePaymentsPage() {
               {/* Live Balance Preview */}
               {(() => {
                 const paying = parseFloat(collectAmount) || 0;
-                const currentDue = parseFloat(selectedBillForPayment.dueAmount || 0);
-                const currentPaid = parseFloat(selectedBillForPayment.paidAmount || 0);
+                const currentDue = parseFloat(currentPaymentBill?.dueAmount || 0);
+                const currentPaid = parseFloat(currentPaymentBill?.paidAmount || 0);
                 const newPaid = currentPaid + paying;
                 const newRemainingDue = Math.max(0, currentDue - paying);
                 const isFull = newRemainingDue === 0 && paying > 0;
@@ -660,9 +670,9 @@ export default function DuePaymentsPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

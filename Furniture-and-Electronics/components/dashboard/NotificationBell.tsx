@@ -92,11 +92,11 @@ export default function NotificationBell() {
             markAllAsRead();
           }
         }}
-        className="relative p-1.5 text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-full transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="relative p-2 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/[0.1] rounded-full transition focus:outline-none focus:ring-2 focus:ring-slate-300 shadow-2xs"
         aria-label="Notification center"
       >
         <svg
-          className="h-6 w-6"
+          className="h-5 w-5"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -110,56 +110,54 @@ export default function NotificationBell() {
         </svg>
 
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/3 -translate-y-1/3 bg-red-600 rounded-full animate-pulse">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-black leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-[#780000] rounded-full animate-pulse shadow-[0_2px_4px_rgba(120,0,0,0.3)]">
             {unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-100 py-1 z-50">
-          <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <span className="font-bold text-gray-800 text-sm">Inventory Alerts</span>
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-[#F5F2ED] rounded-2xl shadow-2xl border border-[#E5DFD7] py-0 z-50 overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#E5DFD7] flex justify-between items-center bg-[#EFEBE3]">
+            <span className="font-extrabold text-[#1C1A17] text-sm">Inventory Alerts</span>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs font-bold text-blue-600 hover:underline hover:text-blue-800"
+                className="text-xs font-bold text-[#2563EB] hover:underline"
               >
                 Mark all read
               </button>
             )}
           </div>
 
-          <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
+          <div className="max-h-72 overflow-y-auto divide-y divide-[#E5DFD7]">
             {alerts.length === 0 ? (
-              <div className="px-4 py-6 text-center text-gray-400 text-sm">
+              <div className="px-4 py-8 text-center text-[#6E6862] text-sm font-semibold">
                 No active notifications
               </div>
             ) : (
               alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className={`px-4 py-3 flex flex-col gap-1 hover:bg-gray-50 transition ${
+                  className={`px-5 py-3 flex flex-col gap-1 hover:bg-[#EAE4DC]/50 transition ${
                     dismissedKeys.includes(`${alert.id}-${alert.quantity}`) ? "opacity-60" : ""
                   }`}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-gray-800 text-xs truncate max-w-[150px]">
+                    <span className="font-bold text-[#1C1A17] text-xs truncate max-w-[180px]">
                       {alert.name}
                     </span>
                     <span
-                      className={`text-[8px] font-extrabold px-1 py-0.5 rounded uppercase ${
+                      className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider ${
                         alert.severity === "critical"
-                          ? "bg-red-100 text-red-800"
-                          : alert.severity === "danger"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                          : "bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
                       }`}
                     >
                       {alert.severity === "critical" ? "OUT" : "LOW"}
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-[#6E6862] line-clamp-2 leading-relaxed">
                     {alert.message}
                   </p>
                 </div>
@@ -167,13 +165,13 @@ export default function NotificationBell() {
             )}
           </div>
 
-          <div className="px-4 py-2 border-t border-gray-100 text-center bg-gray-50/50">
+          <div className="px-4 py-2.5 border-t border-[#E5DFD7] text-center bg-[#EFEBE3]">
             <Link
               href="/dashboard"
               onClick={() => setIsOpen(false)}
-              className="text-xs font-bold text-blue-600 hover:underline hover:text-blue-800 block w-full"
+              className="text-xs font-bold text-[#2563EB] hover:underline block w-full"
             >
-              View all alerts
+              View all alerts &rarr;
             </Link>
           </div>
         </div>

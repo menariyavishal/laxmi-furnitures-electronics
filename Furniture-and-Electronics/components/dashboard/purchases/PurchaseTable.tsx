@@ -172,13 +172,13 @@ export default function PurchaseTable({
                   {/* Dept Badge */}
                   <td className="py-3 px-4 whitespace-nowrap">
                     <span
-                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase ${
+                      className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase ${
                         p.department === "ELECTRONICS"
-                          ? "bg-purple-100 text-purple-800"
-                          : "bg-amber-100 text-amber-800"
+                          ? "bg-[#093F52] text-white border border-[#105269] border-b-[#052531] shadow-[0_2px_0_#052531,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]"
+                          : "bg-[#235347] text-white border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]"
                       }`}
                     >
-                      {p.department === "ELECTRONICS" ? "⚡ Elec" : "🛋️ Furn"}
+                      {p.department === "ELECTRONICS" ? "⚡ Elec" : "🪑 Furn"}
                     </span>
                   </td>
 
@@ -193,9 +193,9 @@ export default function PurchaseTable({
                     <div className="text-[10.5px] text-gray-400">
                       {itemsCount} {itemsCount === 1 ? "line item" : "line items"}
                       {p.isStockAdded ? (
-                        <span className="ml-1 text-emerald-600 font-bold">✓ In Stock</span>
+                        <span className="ml-1 text-[#15803D] font-bold">✓ In Stock</span>
                       ) : (
-                        <span className="ml-1 text-amber-600 font-bold">⚠️ Stock Pending</span>
+                        <span className="ml-1 text-[#854D0E] font-bold">⚠️ Stock Pending</span>
                       )}
                     </div>
                   </td>
@@ -206,14 +206,14 @@ export default function PurchaseTable({
                   </td>
 
                   {/* Paid Amount */}
-                  <td className="py-3 px-4 text-right font-bold text-emerald-600 whitespace-nowrap">
+                  <td className="py-3 px-4 text-right font-bold text-[#15803D] whitespace-nowrap">
                     ₹ {Number(p.paidAmount).toLocaleString("en-IN")}
                   </td>
 
                   {/* Due Amount */}
                   <td className="py-3 px-4 text-right whitespace-nowrap">
                     {isDue ? (
-                      <span className="font-black text-red-600 block">
+                      <span className="font-black text-[#780000] block">
                         ₹ {Number(p.dueAmount).toLocaleString("en-IN")}
                       </span>
                     ) : (
@@ -224,19 +224,19 @@ export default function PurchaseTable({
                   {/* Status Badge */}
                   <td className="py-3 px-4 text-center whitespace-nowrap">
                     {p.paymentStatus === "PAID" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-800">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-extrabold bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]">
                         <FaCheckCircle className="w-3 h-3 text-emerald-600" />
                         PAID
                       </span>
                     )}
                     {p.paymentStatus === "PARTIAL" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-amber-100 text-amber-800">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-extrabold bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]">
                         <FaExclamationCircle className="w-3 h-3 text-amber-600" />
                         PARTIAL
                       </span>
                     )}
                     {p.paymentStatus === "UNPAID" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-red-100 text-red-800">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-extrabold bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]">
                         <FaExclamationCircle className="w-3 h-3 text-red-600" />
                         UNPAID
                       </span>

@@ -98,51 +98,51 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Top Bar */}
-      <div className="flex justify-between items-center bg-white p-6 rounded-lg shadow-sm">
+      {/* Top Bar - Elevated z-30 stacking context so dropdown floats above lower cards */}
+      <div className="relative z-30 flex justify-between items-center bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7]">
         <div>
-          <h2 className="text-2xl font-bold text-black">Business Analytics</h2>
-          <p className="text-sm text-gray-500">Sales and profit metrics dashboard</p>
+          <h2 className="text-2xl font-black text-[#1C1A17] tracking-tight">Business Analytics</h2>
+          <p className="text-sm text-[#6E6862]">Sales and profit metrics dashboard</p>
         </div>
         
         <div className="flex items-center gap-3">
           <div className="relative" ref={dropdownRef}>
             <button 
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="border border-gray-300 rounded px-4 py-2 bg-white text-sm min-w-[150px] text-left flex justify-between items-center text-gray-900 font-medium"
+              className="border border-[#DDD6CE] rounded-xl px-4 py-2 bg-white text-sm min-w-[150px] text-left flex justify-between items-center text-[#1C1A17] font-bold hover:border-[#D5CDC3] transition shadow-2xs"
             >
               {days === "custom" ? "Custom Range" : `Last ${days} Days`}
-              <span className="ml-2 text-gray-500 text-xs">▼</span>
+              <span className="ml-2 text-[#6E6862] text-xs">▼</span>
             </button>
             
             {dropdownOpen && (
-              <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 w-80 p-2">
+              <div className="absolute top-full right-0 mt-2 bg-[#F5F2ED] border border-[#DDD6CE] rounded-2xl shadow-2xl z-50 w-80 p-3">
                 <div className="flex flex-col space-y-1">
-                  <button onClick={() => { setDays("7"); setDropdownOpen(false); }} className={`text-left px-3 py-2 text-sm rounded ${days === "7" ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-100"}`}>Last 7 Days</button>
-                  <button onClick={() => { setDays("30"); setDropdownOpen(false); }} className={`text-left px-3 py-2 text-sm rounded ${days === "30" ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-100"}`}>Last 30 Days</button>
-                  <button onClick={() => { setDays("90"); setDropdownOpen(false); }} className={`text-left px-3 py-2 text-sm rounded ${days === "90" ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700 hover:bg-gray-100"}`}>Last 90 Days</button>
+                  <button onClick={() => { setDays("7"); setDropdownOpen(false); }} className={`text-left px-3 py-2 text-sm rounded-xl font-bold transition ${days === "7" ? "bg-[#1C1A17] text-white shadow-xs" : "text-[#6E6862] hover:bg-[#EAE4DC] hover:text-[#1C1A17]"}`}>Last 7 Days</button>
+                  <button onClick={() => { setDays("30"); setDropdownOpen(false); }} className={`text-left px-3 py-2 text-sm rounded-xl font-bold transition ${days === "30" ? "bg-[#1C1A17] text-white shadow-xs" : "text-[#6E6862] hover:bg-[#EAE4DC] hover:text-[#1C1A17]"}`}>Last 30 Days</button>
+                  <button onClick={() => { setDays("90"); setDropdownOpen(false); }} className={`text-left px-3 py-2 text-sm rounded-xl font-bold transition ${days === "90" ? "bg-[#1C1A17] text-white shadow-xs" : "text-[#6E6862] hover:bg-[#EAE4DC] hover:text-[#1C1A17]"}`}>Last 90 Days</button>
                 </div>
                 
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <span className="text-xs font-semibold text-gray-500 mb-2 block px-2">Custom Range</span>
+                <div className="mt-3 pt-3 border-t border-[#E5DFD7]">
+                  <span className="text-xs font-bold text-[#6E6862] mb-2 block px-2 uppercase tracking-wider">Custom Range</span>
                   <div className="flex items-center gap-2 px-2">
                     <div className="flex flex-col w-full">
-                      <span className="text-[10px] text-gray-500 mb-0.5">From</span>
+                      <span className="text-[10px] font-bold text-[#6E6862] mb-0.5">From</span>
                       <input 
                         type="date" 
                         value={startDate}
                         onChange={e => setStartDate(e.target.value)}
-                        className="border border-gray-300 rounded px-2 py-1.5 text-xs w-full"
+                        className="border border-[#DDD6CE] bg-white rounded-lg px-2 py-1.5 text-xs text-[#1C1A17] font-semibold w-full outline-none focus:border-[#1C1A17]"
                       />
                     </div>
-                    <span className="text-gray-400 mt-4">→</span>
+                    <span className="text-[#6E6862] mt-4 font-bold">→</span>
                     <div className="flex flex-col w-full">
-                      <span className="text-[10px] text-gray-500 mb-0.5">To</span>
+                      <span className="text-[10px] font-bold text-[#6E6862] mb-0.5">To</span>
                       <input 
                         type="date" 
                         value={endDate}
                         onChange={e => setEndDate(e.target.value)}
-                        className="border border-gray-300 rounded px-2 py-1.5 text-xs w-full"
+                        className="border border-[#DDD6CE] bg-white rounded-lg px-2 py-1.5 text-xs text-[#1C1A17] font-semibold w-full outline-none focus:border-[#1C1A17]"
                       />
                     </div>
                   </div>
@@ -153,7 +153,7 @@ export default function AnalyticsDashboard() {
                       setDropdownOpen(false); 
                     }}
                     disabled={!startDate || !endDate}
-                    className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded disabled:opacity-50 transition"
+                    className="mt-3 w-full bg-[#1C1A17] hover:bg-[#2C2926] text-white text-xs font-bold py-2 rounded-xl transition shadow-xs disabled:bg-[#DDD6CE] disabled:text-[#6E6862]"
                   >
                     Apply Range
                   </button>
@@ -182,19 +182,19 @@ export default function AnalyticsDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
+          <div className="bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7] border-l-4 border-l-blue-500">
             <span className="text-sm font-medium text-gray-500 block">Total Revenue</span>
             <span className="text-3xl font-bold text-gray-900 mt-2 block">₹{stats.totalSales}</span>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+          <div className="bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7] border-l-4 border-l-emerald-500">
             <span className="text-sm font-medium text-gray-500 block">Total Profit Margin</span>
             <span className="text-3xl font-bold text-gray-900 mt-2 block">₹{stats.totalProfit}</span>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
+          <div className="bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7] border-l-4 border-l-purple-500">
             <span className="text-sm font-medium text-gray-500 block">Bills Generated</span>
             <span className="text-3xl font-bold text-gray-900 mt-2 block">{stats.totalBills}</span>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-red-500">
+          <div className="bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7] border-l-4 border-l-rose-500">
             <span className="text-sm font-medium text-gray-500 block">Low Stock Warnings</span>
             <span className="text-3xl font-bold text-red-600 mt-2 block">{stats.lowStockCount}</span>
           </div>
@@ -210,7 +210,7 @@ export default function AnalyticsDashboard() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sales Trend Chart */}
-          <div className="col-span-1 lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+          <div className="col-span-1 lg:col-span-2 bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7]">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Revenue & Profit Trend</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -238,7 +238,7 @@ export default function AnalyticsDashboard() {
           </div>
 
           {/* Payment breakdown */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className="bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7]">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Payment Volume Distribution</h3>
             <div className="h-80 flex flex-col justify-between">
               <div className="h-60">
@@ -269,7 +269,7 @@ export default function AnalyticsDashboard() {
           </div>
 
           {/* Category distribution */}
-          <div className="col-span-1 lg:col-span-3 bg-white p-6 rounded-lg shadow-sm">
+          <div className="col-span-1 lg:col-span-3 bg-[#F5F2ED]/95 backdrop-blur-md p-6 rounded-2xl shadow-sm border border-[#E5DFD7]">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Category-Wise Sales</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">

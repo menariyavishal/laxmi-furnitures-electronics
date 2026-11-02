@@ -37,7 +37,7 @@ export default function LoginForm() {
           Laxmi Electronics & Furnitures
         </h2>
         <p className="mt-3 text-center text-xs text-white/60 font-semibold uppercase tracking-widest">
-          Owner: Lalit Menariya
+          Owner: Suraj Menariya
         </p>
         <p className="mt-6 text-center text-xl text-white/90 font-light">
           Welcome Back, Owner

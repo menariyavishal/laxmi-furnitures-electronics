@@ -116,24 +116,24 @@ export default function BookingHistoryRow({
           <div className="flex flex-col items-start gap-1">
             <Link
               href={`/billing/${furnitureBill.id}`}
-              className="inline-flex items-center gap-1 font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors shadow-2xs font-mono"
+              className="inline-flex items-center gap-1.5 font-semibold text-white bg-[#235347] hover:brightness-110 px-2.5 py-0.5 rounded-md border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] transition-all font-mono"
               title="View Furniture Invoice"
             >
               <span>🪑</span>
               <span>{furnitureBill.billNumber}</span>
             </Link>
             {Number(furnitureBill.dueAmount || 0) === 0 ? (
-              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+              <span className="text-[10px] font-extrabold bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-1.5 py-0.5 rounded">
                 ✓ Paid
               </span>
             ) : (
-              <span className="text-[10px] font-extrabold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+              <span className="text-[10px] font-extrabold bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-1.5 py-0.5 rounded">
                 Due: ₹{Number(furnitureBill.dueAmount).toLocaleString("en-IN")}
               </span>
             )}
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] px-2 py-0.5 rounded">
             <span>⏳</span>
             <span>Pending Invoice</span>
           </span>
@@ -145,7 +145,7 @@ export default function BookingHistoryRow({
         {!hasElectronics ? (
           <span className="text-gray-400 font-medium">—</span>
         ) : electronicsBills.length === 0 ? (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] px-2 py-0.5 rounded">
             <span>⏳</span>
             <span>Pending Delivery</span>
           </span>
@@ -154,18 +154,18 @@ export default function BookingHistoryRow({
           <div className="flex flex-col items-start gap-1">
             <Link
               href={`/billing/${electronicsBills[0].id}`}
-              className="inline-flex items-center gap-1 font-semibold text-purple-900 bg-purple-50 hover:bg-purple-100 px-2 py-0.5 rounded border border-purple-200 transition-colors shadow-2xs font-mono"
+              className="inline-flex items-center gap-1.5 font-semibold text-white bg-[#093F52] hover:brightness-110 px-2.5 py-0.5 rounded-md border border-[#105269] border-b-[#052531] shadow-[0_2px_0_#052531,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] transition-all font-mono"
               title="View Electronics Delivery Invoice"
             >
               <span>⚡</span>
               <span>{electronicsBills[0].billNumber}</span>
             </Link>
             {Number(electronicsBills[0].dueAmount || 0) === 0 ? (
-              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+              <span className="text-[10px] font-extrabold bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-1.5 py-0.5 rounded">
                 ✓ Paid
               </span>
             ) : (
-              <span className="text-[10px] font-extrabold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+              <span className="text-[10px] font-extrabold bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-1.5 py-0.5 rounded">
                 Due: ₹{Number(electronicsBills[0].dueAmount).toLocaleString("en-IN")}
               </span>
             )}
@@ -173,11 +173,11 @@ export default function BookingHistoryRow({
         ) : (
           /* Multiple Invoices: Split interactive pill with direct link + dropdown toggle, Due/Paid status underneath */
           <div className="flex flex-col items-start gap-1 relative">
-            <div className="relative inline-flex items-stretch rounded-md border border-purple-200 bg-purple-50 shadow-2xs">
+            <div className="relative inline-flex items-stretch rounded-md border border-[#105269] border-b-[#052531] bg-[#093F52] shadow-[0_2px_0_#052531,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]">
               {/* Clickable Bill Link */}
               <Link
                 href={`/billing/${currentElecBill.id}`}
-                className="inline-flex items-center gap-1 font-semibold text-purple-950 hover:bg-purple-100 px-2.5 py-0.5 text-xs transition-colors rounded-l-md font-mono"
+                className="inline-flex items-center gap-1.5 font-semibold text-white hover:brightness-110 px-2.5 py-0.5 text-xs transition-all rounded-l-md font-mono"
                 title="Click to open invoice"
               >
                 <span>⚡</span>
@@ -188,7 +188,7 @@ export default function BookingHistoryRow({
               <button
                 type="button"
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="px-2 hover:bg-purple-200 border-l border-purple-200 text-purple-700 text-[10px] font-black flex items-center justify-center transition-colors rounded-r-md cursor-pointer"
+                className="px-2 hover:bg-white/10 border-l border-[#105269] text-white text-[10px] font-black flex items-center justify-center transition-colors rounded-r-md cursor-pointer"
                 title="Switch to another delivery invoice"
               >
                 ▾
@@ -227,10 +227,8 @@ export default function BookingHistoryRow({
                             {isCurrent && <span className="text-purple-600">●</span>}
                           </span>
                           <span
-                            className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded border ${
-                              bDue === 0
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-red-50 text-red-600 border-red-200"
+                            className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
+                              bDue === 0 ? "bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]" : "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
                             }`}
                           >
                             {bDue === 0 ? "✓ Paid" : `Due ₹${bDue.toLocaleString("en-IN")}`}
@@ -245,11 +243,11 @@ export default function BookingHistoryRow({
 
             {/* Live Due / Paid status for the selected bill */}
             {Number(currentElecBill.dueAmount || 0) === 0 ? (
-              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+              <span className="text-[10px] font-extrabold bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-1.5 py-0.5 rounded">
                 ✓ Paid
               </span>
             ) : (
-              <span className="text-[10px] font-extrabold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+              <span className="text-[10px] font-extrabold bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] px-1.5 py-0.5 rounded">
                 Due: ₹{Number(currentElecBill.dueAmount).toLocaleString("en-IN")}
               </span>
             )}
@@ -261,26 +259,28 @@ export default function BookingHistoryRow({
       <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
         ₹{total.toLocaleString("en-IN")}
       </td>
-      <td className="px-4 py-3 whitespace-nowrap font-medium text-emerald-700">
+      <td className="px-4 py-3 whitespace-nowrap font-medium text-[#15803D]">
         ₹{advance.toLocaleString("en-IN")}
       </td>
       <td className="px-4 py-3 whitespace-nowrap font-bold">
         {liveRemainingDue <= 0 ? (
-          <span className="text-emerald-600">₹0 (Paid)</span>
+          <span className="text-[#15803D]">₹0 (Paid)</span>
         ) : (
-          <span className="text-red-600">₹{liveRemainingDue.toLocaleString("en-IN")}</span>
+          <span className="text-[#780000]">₹{liveRemainingDue.toLocaleString("en-IN")}</span>
         )}
       </td>
 
       {/* Status */}
       <td className="px-4 py-3 whitespace-nowrap">
         <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
             booking.status === "COMPLETED"
-              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+              ? "bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
               : booking.status === "CANCELLED"
-              ? "bg-gray-100 text-gray-700 border border-gray-200"
-              : "bg-blue-100 text-blue-800 border border-blue-200"
+              ? "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
+              : booking.status === "PARTIALLY_DELIVERED"
+              ? "bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
+              : "bg-[#F1F5F9] text-[#334155] border border-[#94A3B8] border-b-[#64748B] shadow-[0_2px_4px_rgba(71,85,105,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
           }`}
         >
           {booking.status.replace("_", " ")}

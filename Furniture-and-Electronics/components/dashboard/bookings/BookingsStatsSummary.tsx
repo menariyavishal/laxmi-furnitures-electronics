@@ -45,12 +45,12 @@ export default function BookingsStatsSummary({ bookings }: BookingsStatsSummaryP
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* 1. Active Bookings */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-sm flex items-center justify-between">
+      <div className="bg-[#F5F2ED]/95 backdrop-blur-md rounded-2xl p-4 border border-[#E5DFD7] shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-[#6E6862] uppercase tracking-wider">
             Active Bookings
           </p>
-          <p className="text-2xl font-black text-gray-900 mt-1">
+          <p className="text-2xl font-black text-[#1C1A17] mt-1">
             {activeBookings}
           </p>
         </div>
@@ -60,9 +60,9 @@ export default function BookingsStatsSummary({ bookings }: BookingsStatsSummaryP
       </div>
 
       {/* 2. Advance Paid */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-sm flex items-center justify-between">
+      <div className="bg-[#F5F2ED]/95 backdrop-blur-md rounded-2xl p-4 border border-[#E5DFD7] shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-[#6E6862] uppercase tracking-wider">
             Advance Received
           </p>
           <p className="text-2xl font-black text-emerald-600 mt-1">
@@ -75,9 +75,9 @@ export default function BookingsStatsSummary({ bookings }: BookingsStatsSummaryP
       </div>
 
       {/* 3. Balance Due */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-sm flex items-center justify-between">
+      <div className="bg-[#F5F2ED]/95 backdrop-blur-md rounded-2xl p-4 border border-[#E5DFD7] shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-[#6E6862] uppercase tracking-wider">
             Pending Balance
           </p>
           <p className="text-2xl font-black text-amber-600 mt-1">
@@ -90,9 +90,9 @@ export default function BookingsStatsSummary({ bookings }: BookingsStatsSummaryP
       </div>
 
       {/* 4. Due in 7 Days (Urgent) */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200/80 shadow-sm flex items-center justify-between">
+      <div className="bg-[#F5F2ED]/95 backdrop-blur-md rounded-2xl p-4 border border-[#E5DFD7] shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-[#6E6862] uppercase tracking-wider">
             Due in 7 Days
           </p>
           <p className="text-2xl font-black text-rose-600 mt-1">

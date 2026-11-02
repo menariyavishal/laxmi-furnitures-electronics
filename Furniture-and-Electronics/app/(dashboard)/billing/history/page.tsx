@@ -8,6 +8,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { FaSpinner } from "react-icons/fa";
 import useSWRInfinite from "swr/infinite";
 import BillingHistoryLoading from "./loading";
+import { Modal } from "@/components/ui/modal";
 import { useDepartment } from "@/components/dashboard/department/DepartmentContext";
 
 
@@ -290,10 +291,10 @@ export default function BillingHistoryPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-0.5 inline-flex text-xs font-bold rounded-full ${
+                    <span className={`px-2.5 py-0.5 inline-flex text-xs font-semibold rounded-full items-center gap-1 ${
                       bill.department === "ELECTRONICS"
-                        ? "bg-purple-100 text-purple-800 border border-purple-200"
-                        : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                        ? "bg-[#093F52] text-white border border-[#105269] border-b-[#052531] shadow-[0_2px_0_#052531,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]"
+                        : "bg-[#235347] text-white border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]"
                     }`}>
                       {bill.department === "ELECTRONICS" ? "⚡ Electronics" : "🪑 Furniture"}
                     </span>
@@ -308,20 +309,20 @@ export default function BillingHistoryPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
                     <div>{bill.paymentMode}</div>
                     {bill.paymentStatus === "PARTIAL" && (
-                      <div className="text-[11px] font-bold text-red-600">
+                      <div className="text-[11px] font-bold text-[#780000]">
                         Due: ₹{Number(bill.dueAmount).toLocaleString("en-IN")}
                       </div>
                     )}
                     {bill.paymentStatus === "PAID" && (
-                      <div className="text-[10px] font-semibold text-emerald-600">
+                      <div className="text-[10px] font-bold text-[#15803D]">
                         Paid
                       </div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bill.status === "voided"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-green-100 text-green-800"
+                    <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-extrabold uppercase rounded-full ${bill.status === "voided"
+                        ? "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                        : "bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
                       }`}>
                       {bill.status}
                     </span>
@@ -329,11 +330,11 @@ export default function BillingHistoryPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {bill.whatsappStatus ? (
                       <div>
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bill.whatsappStatus === "sent"
-                            ? "bg-green-100 text-green-800"
+                        <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-bold uppercase rounded-full ${bill.whatsappStatus === "sent"
+                            ? "bg-[#EBFDE7] text-[#14532D] border border-[#81FF7A]/80 border-b-[#4ADE80] shadow-[0_2px_4px_rgba(20,83,45,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
                             : bill.whatsappStatus === "failed"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
+                              ? "bg-[#FDF2F2] text-[#780000] border border-[#780000]/30 border-b-[#780000]/60 shadow-[0_2px_4px_rgba(120,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.9)]"
+                              : "bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)]"
                           }`}>
                           {bill.whatsappStatus}
                         </span>
@@ -411,10 +412,12 @@ export default function BillingHistoryPage() {
         </div>
       )}
 
-      {/* Edit Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+      {/* Edit Customer Modal with Spring Animation */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        className="bg-[#FAF3F3] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-[#EEDCDD]"
+      >
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
               <h3 className="text-lg font-bold text-gray-800">Edit Customer Details</h3>
               <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
@@ -465,9 +468,7 @@ export default function BillingHistoryPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 }

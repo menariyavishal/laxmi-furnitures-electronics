@@ -3,7 +3,7 @@
 
 **Version:** 2.0 (Production Release)  
 **Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
-**Proprietor:** Lalit Menariya  
+**Proprietor:** Suraj Menariya  
 **Status:** Implemented & Deployed  
 
 ---
@@ -43,7 +43,7 @@ This application provides a unified, web-based enterprise management system deli
 
 | Role | Target Users | Permissions & Access Scope |
 |---|---|---|
-| **Owner (Admin)** | Lalit Menariya (Proprietor) | Full administrative access: master inventory control, wholesale purchase logging, vendor ledger, cost prices, profit margins, staff management, financial analytics, WhatsApp bot configuration, and bill voiding. |
+| **Owner (Admin)** | Suraj Menariya (Proprietor) | Full administrative access: master inventory control, wholesale purchase logging, vendor ledger, cost prices, profit margins, staff management, financial analytics, WhatsApp bot configuration, and bill voiding. |
 | **Staff (Counter Sales)** | Sales associates & counter billing staff | Operational billing access: create walk-in bills, register advance bookings, schedule deliveries, view read-only inventory levels. **Strictly blocked** from viewing cost prices, vendor purchase prices, margin percentages, and store analytics. |
 
 ---

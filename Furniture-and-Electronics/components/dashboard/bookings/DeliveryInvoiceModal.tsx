@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Modal } from "@/components/ui/modal";
 import { BookingResponse } from "@/types/booking";
 import { generateDeliveryInvoice } from "@/lib/api/booking";
 
@@ -183,8 +184,11 @@ export default function DeliveryInvoiceModal({
   const isPartial = selectedItemIds.length < unbilledItems.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-gray-100 flex flex-col max-h-[92vh]">
+    <Modal
+      isOpen={isOpen && Boolean(booking)}
+      onClose={onClose}
+      className="bg-[#FAF6F0] rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-[#EADFCF] flex flex-col max-h-[92vh]"
+    >
         {/* Header */}
         <div className="px-6 py-4 bg-gradient-to-r from-blue-700 to-indigo-800 text-white flex items-center justify-between">
           <div>
@@ -259,7 +263,7 @@ export default function DeliveryInvoiceModal({
                 Select Items to Deliver Now ({selectedItemIds.length}/{unbilledItems.length})
               </label>
               {isPartial && (
-                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                <span className="text-[11px] font-bold bg-[#FEF9E7] text-[#854D0E] border border-[#FFCA3A] border-b-[#E5B020] shadow-[0_2px_4px_rgba(180,83,9,0.14),inset_0_1px_0_rgba(255,255,255,0.9)] px-2 py-0.5 rounded">
                   Partial Delivery: Remaining items stay in booking
                 </span>
               )}
@@ -492,7 +496,6 @@ export default function DeliveryInvoiceModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </Modal>
   );
 }

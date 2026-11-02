@@ -122,7 +122,7 @@ sequenceDiagram
     Staff->>DelUI: Clicks "Generate Delivery Invoice (Appliance Package)"
     DelUI->>Staff: Prompts for Physical Appliance Serial / IMEI Numbers
     Staff->>DelUI: Scans / Types Serial Numbers
-    DelUI->>API: POST /api/v1/bookings/{id}/fulfill-electronics
+    DelUI->>API: POST /api/v1/bookings/{id}/invoice
     
     rect rgb(240, 248, 255)
         note right of API: Electronics Tax Invoice Generation
