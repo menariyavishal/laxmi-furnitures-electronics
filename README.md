@@ -10,7 +10,7 @@
 </p>
 
 <h1 align="center">🛋️⚡ Laxmi Electronics & Furnitures</h1>
-<h3 align="center">Retail POS · Wedding Package Bookings · Inventory · Automated WhatsApp Dispatch</h3>
+<h3 align="center">Retail POS · Advance Wedding Packages · Inventory · Automated WhatsApp Dispatch</h3>
 
 <p align="center">
   An enterprise-grade, multi-department enterprise resource and retail management platform built for <strong>Laxmi Electronics & Furnitures, Kanore (Udaipur, Rajasthan)</strong>.<br/>
@@ -35,6 +35,24 @@
 │ FIFO queue, auto PDF send. │ vendor ledger & WhatsApp.   │ alerts, inventory health.   │
 └────────────────────────────┴─────────────────────────────┴─────────────────────────────┘
 ```
+
+---
+
+## 📚 System & Engineering Documentation
+
+Comprehensive technical specifications, entity models, and architectural guides are maintained inside [`Furniture-and-Electronics/docs/`](Furniture-and-Electronics/docs):
+
+| Document | Description | Direct Link |
+|---|---|---|
+| **01. Product Requirements Document (PRD)** | Business goals, dual-department showroom operations, advance wedding package lifecycle, and core feature definitions. | [📖 View 01_PRD.md](Furniture-and-Electronics/docs/01_PRD.md) |
+| **02. Technology Stack & Architecture** | Full-stack technology choices, client canvas compression engine, Baileys WebSocket protocol, and Northflank hosting topology. | [🔧 View 02_TECH_STACK.md](Furniture-and-Electronics/docs/02_TECH_STACK.md) |
+| **03. Database Architecture & ERD** | Complete PostgreSQL database schema, Prisma model definitions, relationships, foreign keys, and indexing strategy. | [🗄️ View 03_DATABASE_ARCHITECTURE.md](Furniture-and-Electronics/docs/03_DATABASE_ARCHITECTURE.md) |
+| **04. System Data Flows** | Sequence diagrams for booking assembly, split delivery invoicing, POS checkout, due payment collection, and WhatsApp message queues. | [🔄 View 04_DATA_FLOW.md](Furniture-and-Electronics/docs/04_DATA_FLOW.md) |
+| **05. Project Structure & Modularity** | Comprehensive guide to folder organization, App Router paths, component hierarchy, and decoupled microservice files. | [📁 View 05_PROJECT_STRUCTURE.md](Furniture-and-Electronics/docs/05_PROJECT_STRUCTURE.md) |
+| **06. Phase Distribution & Roadmap** | Technical log and breakdown of all 7 implementation phases (POS, Bookings, Cloud Storage, WhatsApp Engine, Purchases, Polish). | [🚀 View 06_PHASE_DISTRIBUTION.md](Furniture-and-Electronics/docs/06_PHASE_DISTRIBUTION.md) |
+| **07. Requirements Analysis Report** | Functional requirements baseline (FR1-FR10), security rules, role boundaries, and business rules. | [📊 View 07_REQUIREMENTS_ANALYSIS_REPORT.md](Furniture-and-Electronics/docs/07_REQUIREMENTS_ANALYSIS_REPORT.md) |
+| **08. Traceability Matrix** | Traceability mapping linking every functional requirement to its UI modules, API routes, database models, and test scope. | [🎯 View 08_TRACEABILITY_MATRIX.md](Furniture-and-Electronics/docs/08_TRACEABILITY_MATRIX.md) |
+| **09. Future Enhancements** | Technical proposals for global barcode scanner listeners, driver mobile companion PWA, godown transfers, and catalog bot. | [🔮 View future enhancements 1.md](Furniture-and-Electronics/docs/future%20enhancements%201.md) |
 
 ---
 
@@ -98,7 +116,7 @@ Built specifically for Indian showroom workflows where families reserve complete
 * **Multi-Department Split**: Separate financial tracking for Furniture vs. Electronics with independent delivery schedules.
 * **Immediate Furniture Tax Invoice**: Automatically creates and links `#FURN-YYYY-XXXX` tax invoice upon booking confirmation.
 * **On-Delivery Electronics Invoicing**: Reserved electronics remain pending until physical dispatch, at which point serial numbers/IMEIs and warranty terms are assigned.
-* **Visual Booking Slip**: Branded, print-ready document displaying item descriptions, custom woodworking specifications, financials, and signature areas.
+* **Visual Booking Slip**: Branded, print-ready document displaying item descriptions, custom woodworking specifications, financials, design photo references, and signature areas.
 
 ### 2. 📷 Cloud Design References & Client Compression
 * **Client-Side Canvas Compression**: High-resolution smartphone camera photos (5–12MB) are automatically compressed in-browser down to **150–250KB** before upload, preserving aspect ratio and sharpness while eliminating network bottlenecks.
@@ -141,6 +159,7 @@ Laxmi-electronic-and-furnitures/
 │   ├── components/                     # Reusable UI Components
 │   │   ├── dashboard/                  # Module tables, slips, invoice templates, charts
 │   │   └── ui/                         # Design system buttons, modals, input elements
+│   ├── docs/                           # 9 In-Depth Engineering & Architecture Docs
 │   ├── lib/                            # Shared Utilities & Business Logic
 │   │   ├── booking-photos.ts           # Pure design photo extraction (Safe for Server & Client)
 │   │   ├── image-compression.ts        # Client-side canvas image compressor
@@ -159,7 +178,7 @@ Laxmi-electronic-and-furnitures/
 │   ├── routes.js                       # Express API endpoints (/health, /status, /connect, /send)
 │   └── server.js                       # Express application bootstrap
 │
-└── README.md                           # Master Project Documentation
+└── README.md                           # Master Project Documentation Portal
 ```
 
 ---
@@ -257,4 +276,3 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
   Built with ❤️ for <strong>Laxmi Electronics & Furnitures, Kanore</strong><br/>
   Main Market, Kanore, Udaipur (Raj.) • Helpline: +91 63755 91682
 </p>
-

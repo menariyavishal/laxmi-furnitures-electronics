@@ -1,14 +1,20 @@
 # Traceability Matrix
-## Mobile Shop — Inventory, Billing & Sales Analytics System
+## Laxmi Electronics & Furnitures — Requirements to Code Mapping
 
-| Requirement ID | Description | Module | API Endpoint | Database Entities | Test Cases (Target) |
+**Version:** 2.0 (Production Release)  
+**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
+
+---
+
+| Req ID | Requirement Description | Primary Module | API Endpoints | Database Entities | Test & Verification Scope |
 |---|---|---|---|---|---|
-| **FR1.1-1.3** | Authentication & Roles | Auth | `/api/v1/auth/login`, `/api/v1/auth/logout` | `users` | Login success/failure, RBAC enforcement, session persistence |
-| **FR2.1-2.2** | Category Management | Products | `/api/v1/categories` | `categories` | Create category, hierarchical retrieval, staff read-only |
-| **FR3.1-3.7** | Inventory/Stock Management | Products | `/api/v1/products`, `/api/v1/products/[id]/stock-in`, `/api/v1/products/[id]/units`, `/api/v1/products/search` | `products`, `product_units`, `stock_in_records` | Add stock (quantity & IMEI), duplicate IMEI check, low-stock threshold, search functionality |
-| **FR4.1-4.7** | Billing | Bills | `/api/v1/bills`, `/api/v1/bills/[id]`, `/api/v1/bills/[id]/void` | `bills`, `bill_items`, `customers`, `products`, `product_units` | Atomic bill creation, overselling prevention, voiding (stock restore), cost price hidden from staff |
-| **FR5.1-5.4** | Monthly Sales Analysis | Analytics | `/api/v1/analytics/monthly` | `bills`, `bill_items`, `products`, `categories` | Accurate aggregation of revenue/units, correct category breakdown, valid month-over-month comparison |
-| **FR6.1-6.2** | Dashboard (Home) | Dashboard | Combines APIs | N/A | UI rendering based on role (Owner vs Staff views) |
-| **NFR-SEC** | Security (RBAC & Hashing) | Auth | All `/api/v1/*` | `users` | Hash verification, API route blocking for unauthorized roles |
-| **NFR-PERF** | Performance (<1s responses) | All | All `/api/v1/*` | All | Load testing bill creation and analytics endpoints |
-| **NFR-DATA** | Data Integrity (Stock Atomicity) | Bills | `/api/v1/bills` | `products`, `product_units` | Concurrent checkout of last unit, rollback on failure |
+| **FR1** | Authentication & RBAC | Auth | `/api/v1/auth/[...nextauth]` | `users`, `password_reset_tokens` | Credentials check, JWT session claims, API route protection, cost-price masking for staff. |
+| **FR2** | Dual Catalog & Stock Tracking | Inventory | `/api/v1/categories`, `/api/v1/products`, `/api/v1/inventory` | `categories`, `products`, `product_units`, `stock_in_records` | Department filtering, quantity increment/decrement, duplicate IMEI validation, low-stock threshold triggers. |
+| **FR3** | POS Counter Billing | Billing | `/api/v1/bills`, `/api/v1/bills/[id]`, `/api/v1/bills/[id]/void` | `bills`, `bill_items`, `customers`, `products`, `product_units` | Atomic checkout, inventory deduction, GST calculation (SGST+CGST), multi-mode payment, bill voiding. |
+| **FR4** | Advance Wedding Bookings | Bookings | `/api/v1/bookings`, `/api/v1/bookings/[id]` | `bookings`, `booking_items`, `customers`, `delivery_schedules` | Reference code formatting (`ADB-YYYY-XXXX`), advance payment tracking, remaining balance calculation, custom notes. |
+| **FR5** | Cloud Design References & Compression | Bookings | `/api/v1/bookings/upload-design` | Supabase `temp-images` bucket | Client canvas compression (10MB -> ~200KB), Supabase CDN URL generation, lightbox preview, PDF slip embedding. |
+| **FR6** | Split Invoicing & Delivery Lifecycle | Deliveries | `/api/v1/bookings/[id]/fulfill-electronics`, `/api/v1/deliveries` | `bookings`, `booking_items`, `bills`, `delivery_schedules` | Auto-generation of `#FURN-...` bill on booking, pending electronics status, delivery invoice `#ELEC-...` on fulfillment, warranty start dates. |
+| **FR7** | Automated WhatsApp Engine | WhatsApp | `/api/v1/bills/[id]/whatsapp/send`, `/api/v1/bookings/[id]/whatsapp/resend`, `POST /send` | `whatsapp_settings`, `whatsapp_deliveries`, `whatsapp_audit_logs` | Baileys socket initiation, sequential FIFO queue, 2s cooldown between documents, base64 data URL sanitization. |
+| **FR8** | Accounts Due & Payment Settlement | Billing Ledger | `/api/v1/bills/[id]/payment` | `bills`, `customers`, `bookings` | Customer due balance ledger, 15+ days overdue widget, payment installment receipt PDF dispatch over WhatsApp. |
+| **FR9** | Vendor Supply Chain & Purchases | Purchases | `/api/v1/purchases`, `/api/v1/vendors` | `vendors`, `purchases`, `purchase_items`, `purchase_payments` | Supplier registry, stock receipt logging (`PUR-YYYY-XXXX`), unit cost tracking, payment advice PDF dispatch over WhatsApp. |
+| **FR10** | Executive Financial Analytics | Analytics | `/api/v1/analytics` | `bills`, `bill_items`, `purchases` | Revenue, gross profit calculation, department breakdown (Furniture vs Electronics), sales trends. |

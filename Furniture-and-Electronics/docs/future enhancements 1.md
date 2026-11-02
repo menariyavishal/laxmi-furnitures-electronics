@@ -1,69 +1,47 @@
-# Hardware Integration: Global Barcode Scanner Listener
+# Future Enhancements & Engineering Roadmap
+## Laxmi Electronics & Furnitures — Next-Generation Architectural Roadmap
 
-## Objective
-To provide a seamless, zero-click stock management workflow for physical store environments. When a user connects a physical USB/Bluetooth barcode scanner gun, they should be able to scan a product's UPC barcode from **anywhere** on the Inventory page without having to manually click the "Scan to Add Stock" button or focus on a specific search input field. The system should automatically intercept the scan, query the database, and instantly redirect the user to that product's specific stock management page.
+**Version:** 2.0 (Planning Document)  
+**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
 
-## The Problem
-By default, operating systems treat external barcode scanners exactly like standard keyboards. When a scanner reads a barcode, it rapidly "types" the numbers (e.g., `194252000001`) and simulates an `Enter` keystroke. Because the browser cannot natively distinguish between a human typing on a keyboard and a scanner gun firing, scanning a product when an input field is not explicitly focused results in ignored or lost input.
+---
 
-## How to Implement It
-To achieve a zero-click flow, we must implement a **Speed-Typing Detection Algorithm** that runs globally on the page.
+## 1. Global Hardware Barcode Scanner Listener (Zero-Click POS)
 
-### 1. The Global Keydown Listener
-We will attach a global `keydown` event listener to the `window` or `document` object specifically on the Inventory page using a React `useEffect` hook.
+### Objective
+Provide a zero-click stock management and billing workflow on showroom desktops. When a staff member scans a product's barcode with a handheld USB or Bluetooth laser scanner, the system automatically detects the scan from anywhere on the page, identifies the product, and adds it to the active cart or redirects to the product management screen without requiring manual focus on an input box.
 
-### 2. The Speed Algorithm
-Humans type at approximately 100 to 300 milliseconds per character. Barcode scanners "type" at approximately 5 to 15 milliseconds per character. We can use this mathematical difference to differentiate the source of the input.
+### Speed-Typing Detection Algorithm
+Physical barcode scanners simulate a keyboard, firing characters at rapid intervals (5–15ms per character) followed by an `Enter` key. Human typing occurs at 100–300ms intervals.
 
-**Implementation Logic:**
-1. **Initialize State:** Create variables to store a `barcodeBuffer` (string) and a `lastKeystrokeTime` (timestamp).
-2. **Capture Keystrokes:** On every `keydown` event:
-   - Check the time elapsed since the `lastKeystrokeTime`.
-   - If the time elapsed is very small (e.g., `< 30ms`), we assume it is part of a scanner burst and append the character to the `barcodeBuffer`.
-   - If the time elapsed is large (e.g., `> 50ms`), we assume a human is typing, so we clear the `barcodeBuffer` and start over.
-3. **Detect the Terminator:** Scanners append an `Enter` (`\r` or `\n`) key at the end of every scan. When the `Enter` key is detected:
-   - Check if the `barcodeBuffer` has a valid length (e.g., between 8 and 14 characters, standard for UPC/EAN).
-   - If valid, the scan is complete. We immediately call `e.preventDefault()` to stop the browser from triggering any native form submissions.
-4. **Trigger Business Logic:** Pass the finalized `barcodeBuffer` string to the existing `handleStockScanSuccess(code)` function.
-   - The function will call `/api/v1/products/scan?code=SCANNED_CODE`.
-   - The backend looks up the product.
-   - The frontend routes the user directly to `/inventory/[id]/stock`.
-
-### 3. Edge Cases to Handle
-- **Focused Inputs:** If the user is currently typing inside an active `<input>` or `<textarea>` (e.g., they are searching for a product manually or typing in an IMEI), the global listener should temporarily disable itself to prevent interfering with normal typing. We can check `document.activeElement.tagName` to handle this.
-- **Modifier Keys:** The listener should ignore modifier keys (`Shift`, `Control`, `Alt`) to prevent polluting the barcode buffer.
-
-### Example Code Snippet
-```javascript
+```typescript
+// Proposed Implementation Hook
 useEffect(() => {
   let barcodeBuffer = '';
   let lastKeyTime = Date.now();
 
-  const handleGlobalScan = (e) => {
-    // Ignore if user is currently typing in an input field
-    const activeTag = document.activeElement.tagName.toLowerCase();
+  const handleGlobalScan = (e: KeyboardEvent) => {
+    // Suppress if user is manually typing in an active form input
+    const activeTag = document.activeElement?.tagName.toLowerCase();
     if (activeTag === 'input' || activeTag === 'textarea') return;
 
     const currentTime = Date.now();
     const elapsedTime = currentTime - lastKeyTime;
     
-    // If it's been more than 30ms, reset the buffer (human typing detected)
-    if (elapsedTime > 30) {
+    // Reset buffer if delay indicates human typing (> 35ms)
+    if (elapsedTime > 35) {
       barcodeBuffer = '';
     }
 
-    // Handle the Enter key (Terminator)
     if (e.key === 'Enter') {
       if (barcodeBuffer.length >= 8) {
         e.preventDefault();
-        // Trigger the exact same logic the webcam scanner uses!
-        handleStockScanSuccess(barcodeBuffer);
+        handleBarcodeDetected(barcodeBuffer);
       }
       barcodeBuffer = '';
       return;
     }
 
-    // Append standard alphanumeric characters
     if (e.key.length === 1) {
       barcodeBuffer += e.key;
     }
@@ -75,3 +53,40 @@ useEffect(() => {
   return () => window.removeEventListener('keydown', handleGlobalScan);
 }, []);
 ```
+
+---
+
+## 2. Delivery Driver Companion Progressive Web App (PWA)
+
+### Objective
+Equip delivery vehicle drivers with an offline-capable mobile companion app for wedding package deliveries in rural Udaipur villages:
+* **Digital Signature on Glass:** Customer signs directly on the driver's smartphone upon delivery of wedding furniture and appliances.
+* **Geotagged Photo Verification:** Driver snaps a photo of the installed furniture or unboxed appliance as proof of delivery, syncing directly to the booking record.
+* **Cash Collection Reconciliation:** Driver logs cash collected at the customer's door, automatically generating and dispatching a WhatsApp receipt.
+
+---
+
+## 3. Customer Loyalty & Wedding Referral Rewards
+
+### Objective
+Incentivize local families to refer upcoming weddings to Laxmi Electronics & Furnitures:
+* **Customer Reward Points:** Customers accumulate store credit on large wedding purchases redeemable for smaller kitchen appliances or home decor.
+* **Referral Tracking:** Link newly booked wedding packages to the referring family, automatically sending referral vouchers via WhatsApp upon package completion.
+
+---
+
+## 4. Multi-Warehouse & Godown Stock Transfer
+
+### Objective
+As the showroom expands storage across multiple godowns in Kanore:
+* **Location-Based Inventory:** Track stock by physical location (Main Showroom Display vs. Central Godown).
+* **Inter-Godown Transfers:** Digital gate pass and transfer vouchers generated when shifting heavy solid wood furniture suites between the warehouse and the showroom.
+
+---
+
+## 5. Interactive WhatsApp Conversational Bot Menu
+
+### Objective
+Leverage the existing `@whiskeysockets/baileys` microservice connection to handle customer inquiries automatically:
+* **Booking Status Inquiry:** Customers reply with `STATUS ADB-2026-0011` to instantly receive real-time package delivery dates and remaining balances.
+* **Catalog Browsing:** Customers message `CATALOG` to receive high-definition brochures of the latest sofa designs, dining sets, and seasonal refrigerator discounts.

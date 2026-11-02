@@ -1,72 +1,48 @@
 # Requirements Analysis Report
-## Mobile Shop — Inventory, Billing & Sales Analytics System
+## Laxmi Electronics & Furnitures — System Specification & Validation Report
 
-### 1. User Roles
-* **Owner (Admin):** Full access to the system. Can manage inventory, add stock, generate bills, view sales analytics, and manage staff accounts. Has visibility into cost prices and profit margins.
-* **Staff:** Counter staff with billing-only access. Can create bills and view current stock availability (read-only). Cannot access analytics, stock editing, cost-price data, or profit margins.
+**Version:** 2.0 (Production Release)  
+**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
+**Proprietor:** Lalit Menariya  
 
-### 2. Functional Requirements
-* **FR1 Authentication & Roles:** Username/password login, role-based access, audit trails for data modification.
-* **FR2 Category Management:** Create, rename, deactivate categories/sub-categories (Owner only). Each product belongs to one category.
-* **FR3 Inventory Management:** Add new products (serialized or quantity-based). Add stock via IMEI (serialized) or quantity. Dashboard organized category-wise. Prevent duplicate IMEIs. Low-stock flagging.
-* **FR4 Billing:** Start new bill, add line items (quantity or IMEI). Block adding > stock. Atomic stock deduction on finalization. Sequential bill numbers. View/print bill with customer details. Void/cancel bill (same day, Owner only). Staff cannot see cost prices.
-* **FR5 Monthly Sales Analysis:** View total revenue, units sold, category/product breakdown for selected month. Month-over-month comparison. Top-selling products. Automatic data refresh.
-* **FR6 Dashboard:** Owner dashboard with today's sales, month's revenue, low-stock alerts, quick links. Staff dashboard with "New Bill" and read-only stock lookup.
+---
 
-### 3. Non-Functional Requirements
-* **Usability:** Minimal UI, max 2-3 clicks for common tasks, no jargon.
-* **Accessibility:** Usable on desktop/laptop and reasonably on a tablet.
-* **Data Integrity:** Every stock change/sale is logged. Stock counts must never go negative.
+## 1. System Roles & Access Boundaries
 
-### 4. Business Rules
-* Serialized products are tracked individually by IMEI (must be unique globally).
-* Quantity-based products are tracked by a running count.
-* Staff must never see cost prices or profit margins.
-* Stock deduction and bill creation must be atomic (single transaction).
-* Voiding a bill restores stock and must happen on the same day.
+* **Owner (Admin):** Full administrative privileges. Owns product catalog pricing, cost prices, wholesale vendor purchases, margin analytics, user administration, bill voiding, and WhatsApp microservice configuration.
+* **Staff (Counter Billing):** Showroom counter operations only. Can create walk-in bills, assemble advance wedding packages, schedule deliveries, and view read-only inventory availability. **Strictly restricted** from viewing acquisition costs, wholesale purchase history, profit margins, or executive financial reports.
 
-### 5. User Journeys
-* **Adding Stock (Owner):** Select category -> Select product -> Enter IMEIs (serialized) OR quantity + cost price (quantity-based) -> Submit -> Stock incremented.
-* **Billing (Staff/Owner):** Search product -> Add to cart (select IMEI if serialized) -> Add customer info (optional) -> Finalize -> Print/share bill -> Stock atomically decremented.
-* **Analytics (Owner):** Open Dashboard -> Select Month -> View Revenue, Units, Breakdown, Comparison.
+---
 
-### 6. API Requirements
-RESTful JSON endpoints under `/api/v1/`:
-* `POST /auth/login`, `POST /auth/logout`
-* `GET/POST /categories`, `PATCH /categories/[id]`
-* `GET/POST /products`, `GET /products/search`, `PATCH /products/[id]`, `POST /products/[id]/stock-in`, `GET /products/[id]/units`
-* `GET/POST /bills`, `GET /bills/[id]`, `POST /bills/[id]/void`
-* `GET /analytics/monthly`
-* `GET/POST /users`
+## 2. Functional Requirements Baseline
 
-### 7. Database Requirements
-* Relational database (PostgreSQL) ensuring ACID transactions.
-* Tables: `users`, `categories`, `products`, `product_units`, `stock_in_records`, `customers`, `bills`, `bill_items`.
-* Constraints: `quantity_in_stock >= 0`, globally unique `imei_number`.
+* **FR1 Authentication & Access Control:** Secure credentials authentication with JWT sessions. Role-based route guards at both UI and API levels. Audit logging on all financial and inventory state mutations.
+* **FR2 Dual-Department Catalog Management:** Hierarchical categorization supporting `FURNITURE` and `ELECTRONICS` departments. Quantity-based tracking for furniture/fans/coolers; serialized tracking (IMEI/serial number) for branded home appliances.
+* **FR3 Point-of-Sale (POS) Billing:** Real-time billing interface supporting live item addition, barcode scanning via camera/laser, GST tax calculation (SGST + CGST), multiple payment tenders, atomic stock deduction, and sequential department invoice numbering (`#FURN-...`, `#ELEC-...`).
+* **FR4 Advance Wedding Package Bookings:** Package booking engine (`ADB-YYYY-NNNN`) capturing event dates, target delivery windows, advance payment deposits, and custom woodworking specifications.
+* **FR5 Bespoke Design Cloud Sync:** Client-side HTML5 canvas compression pre-processing smartphone photos to 150–250KB JPEG before uploading to Supabase Storage (`temp-images/bookings/{bookingNumber}/`).
+* **FR6 Split Invoicing & Delivery Lifecycle:** Immediate generation of `#FURN-YYYY-NNNN` tax invoices for furniture upon booking; staging electronics as "Pending Delivery" until scheduled delivery dates; one-click fulfillment invoicing activating warranties.
+* **FR7 Automated WhatsApp Delivery Engine:** Decoupled `@whiskeysockets/baileys` microservice with a sequential FIFO queue (2-second rate-limiting cooldown) delivering branded PDF booking slips, tax invoices, and payment receipts directly to customers.
+* **FR8 Accounts Receivable & Due Tracking:** Real-time customer credit ledger, 15+ days overdue accounts receivable aging alert widget, and instant WhatsApp payment receipts upon cash/UPI settlement.
+* **FR9 Wholesale Vendor Supply Chain:** Supplier directory, purchase orders (`PUR-YYYY-NNNN`), inbound warehouse restock tracking, and WhatsApp payment advice dispatch.
+* **FR10 Financial Analytics:** Departmental revenue and margin breakdowns, monthly growth comparisons, and top-performing furniture styles.
 
-### 8. Security Requirements
-* Passwords hashed (bcrypt/argon2).
-* Role-based access control (RBAC) enforced at the backend (API route level).
-* API layer must filter out cost prices for staff tokens.
-* Prevention of SQL injection via Prisma ORM.
+---
 
-### 9. Infrastructure & Deployment Requirements
-* **Architecture:** Unified Next.js monorepo.
-* **Backend:** Next.js API Routes (`/api/v1/`).
-* **Database:** PostgreSQL (Supabase or local).
-* **Hosting:** Vercel.
-* **CI/CD:** GitHub Actions.
+## 3. Core Business Rules
 
-### 10. Third-Party Integrations
-* No external third-party integrations required for MVP (no SMS/WhatsApp integration yet, only browser print dialog via `react-to-print`).
+1. **Department Separation:** Every product, bill, and purchase order belongs explicitly to `FURNITURE` or `ELECTRONICS` (or `COMBINED` on special packages).
+2. **Atomic Inventory State:** Billing and stock deduction must execute in a single atomic database transaction to prevent overselling or race conditions.
+3. **Staff Privacy Barrier:** Counter staff must never see product cost prices or profit margins on any screen or API response.
+4. **Advance Package Invoicing Policy:** Furniture items are invoiced immediately upon booking to commit manufacturing materials; electronics are invoiced on actual delivery to ensure warranty dates match customer handover.
+5. **WhatsApp Rate Limiting:** Outgoing media messages must observe a mandatory 2-second cooldown to protect the Baileys WebSocket connection from socket drops.
 
-### 11. Performance Requirements
-* Bill creation and stock updates must be < 1s.
-* Monthly sales analysis queries should complete in < 1s.
+---
 
-### 12. Missing Requirements, Ambiguities, & Risks
-* **Ambiguity:** Format for printable bill (e.g., logo, exact shop details).
-* **Ambiguity:** Definition of "same day" for voiding bills (24 hours or calendar day?).
-* **Ambiguity:** Can staff apply discounts? (PRD says optional, owner-controlled permission, but no specific feature defined in Tech Stack to handle discount permission per user, just role).
-* **Risk:** Concurrent sales of the last serialized unit. (Mitigated by database row-level locking).
-* **Constraint:** Must use Next.js, Prisma, PostgreSQL, Tailwind. No alternatives allowed.
+## 4. Architecture & Technical Requirements
+
+* **Monorepo Structure:** Next.js 16 App Router web application (`Furniture-and-Electronics/`) paired with a standalone containerized WhatsApp microservice (`whatsapp-bot/`).
+* **Database:** Neon Serverless PostgreSQL with Prisma ORM 6.
+* **Storage:** Supabase Object Storage (`temp-images` bucket).
+* **PDF Rendering:** Client-side vector rendering via `html2canvas-pro` and `jspdf`.
+* **Hosting:** Vercel (Web Application), Northflank (WhatsApp microservice container), Neon (Database).

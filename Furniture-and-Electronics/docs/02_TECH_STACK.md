@@ -1,219 +1,118 @@
-# Tech Stack Document
-## Mobile Shop — Inventory, Billing & Sales Analytics System
+# Technology Stack & System Architecture
+## Laxmi Electronics & Furnitures — Production Platform
 
-**Version:** 1.0 (Draft for Review)
+**Version:** 2.0 (Production Release)  
+**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
 
 ---
 
-## 1. Architecture Overview
+## 1. Architectural Blueprint
 
-A unified full-stack architecture optimized for fast development and simple deployment. Both frontend and backend run as a single Next.js application, eliminating deployment complexity and context switching.
+The platform follows a modern, decoupled cloud architecture designed for high availability, zero-maintenance database scaling, instant WhatsApp media dispatch, and optimized cloud storage for mobile showroom photography.
 
 ```mermaid
-flowchart LR
-    A[Browser - React/Next.js UI] -- REST API / JSON --> B[Next.js API Routes]
-    B -- SQL via Prisma ORM --> C[(PostgreSQL Database)]
-    B -- NextAuth JWT --> A
+flowchart TD
+    subgraph ClientLayer["Client Layer (Showroom Counter & Tablets)"]
+        UI["Next.js 16 UI (React 19 + Tailwind CSS 4)"]
+        Compressor["Client-Side Canvas Image Compressor (150-250KB)"]
+        PDFGen["Client PDF Engine (html2canvas-pro + jsPDF)"]
+    end
+
+    subgraph AppServer["Web Application Server (Vercel)"]
+        NextServer["Next.js App Router (v16.1.6)"]
+        APIRoutes["REST API Endpoints (/api/v1/*)"]
+        AuthModule["NextAuth.js (JWT Session + Strict RBAC)"]
+        PrismaClient["Prisma ORM 6 Client"]
+    end
+
+    subgraph DataStorage["Persistence & Cloud Storage"]
+        NeonDB[("Neon Serverless PostgreSQL (Prisma 6)")]
+        SupabaseStore[("Supabase Storage: temp-images Bucket")]
+    end
+
+    subgraph WhatsAppSubsystem["WhatsApp Notification Microservice"]
+        LocalDaemon["Local Dev Daemon (scripts/local-whatsapp-daemon.js)"]
+        ProductionBot["Production Bot Container (Northflank)"]
+        BaileysSocket["Baileys WebSocket Engine (@whiskeysockets/baileys)"]
+        FIFOQueue["Sequential FIFO Promise Queue (2s Cooldown)"]
+    end
+
+    subgraph ExternalConsumers["Customers & Suppliers"]
+        WhatsAppClient["Customer WhatsApp (PDF Invoices & Order Slips)"]
+    end
+
+    UI --> Compressor
+    Compressor -->|"Direct Cloud Upload"| SupabaseStore
+    UI --> PDFGen
+    PDFGen -->|"Base64 PDF Dispatch"| APIRoutes
+    UI -->|"Interactive Operations"| NextServer
+    NextServer --> APIRoutes
+    APIRoutes --> AuthModule
+    APIRoutes --> PrismaClient
+    PrismaClient --> NeonDB
+
+    APIRoutes -->|"POST /send (x-api-key)"| ProductionBot
+    APIRoutes -.->|"Local Testing"| LocalDaemon
+    ProductionBot --> FIFOQueue
+    LocalDaemon --> FIFOQueue
+    FIFOQueue --> BaileysSocket
+    BaileysSocket --> WhatsAppClient
 ```
 
-- **Frontend:** React 18 components with Server-Side Rendering where beneficial via Next.js.
-- **Backend:** Next.js API Routes (`/api`) contain all business logic (authentication, stock deduction, billing transactions).
-- **Database:** PostgreSQL — relational structure ensures ACID transactions for critical inventory operations (stock counts must never go negative or desync).
+---
 
-## 2. Recommended Stack
+## 2. Technology Selection Matrix
 
-| Layer | Technology | Why |
-|---|---|---|
-| **Frontend** | **Next.js 14** + **React 18** | Server-side rendering for fast page loads, built-in routing with App Router, API routes eliminate separate backend server |
-| **Styling** | **Tailwind CSS** | Rapid development of minimal UI without custom CSS, design consistency with utility classes |
-| **Charts & Graphs** | **Recharts** | Lightweight, React-native library perfect for monthly sales analysis visualizations |
-| **Backend** | **Next.js API Routes** | All business logic in `/api` routes — type-safe with TypeScript, no separate service to deploy |
-| **Database** | **PostgreSQL** | ACID-compliant transactions ensure stock counts never desync during concurrent sales; relational structure matches inventory data naturally |
-| **ORM** | **Prisma** | Type-safe queries with auto-generated TypeScript client, atomic transactions, versioned migrations, zero boilerplate |
-| **Auth** | **NextAuth.js** (Credentials Provider) | Built-in JWT sessions, simple username/password login, role claims (`owner` / `staff`) in token — minimal setup |
-| **Database Client** | **Supabase** (free tier) or **Local PostgreSQL** | Supabase = zero setup (hosted Postgres), free tier sufficient; local = full control in development |
-| **Printing** | **react-to-print** | Trigger browser print dialog for invoices; no separate print server needed |
-| **Containerization** | **Docker** | Optional; one `docker-compose.yml` for local Postgres if not using Supabase |
-| **Testing** | **Jest** + **React Testing Library** (frontend), **API route tests** | Catch business logic bugs (especially stock deduction) before production |
-| **CI/CD** | **GitHub Actions** | Run tests on every push; Vercel auto-deploys on merge to main |
-| **Hosting** | **Vercel** (frontend + backend) + **Supabase** (database) | Single deployment URL, auto-scaling free tier, one-click rollbacks |
-
-**Why This Stack (vs. Separate FastAPI Backend):**
-- ✅ Single deployment → one URL, one CI/CD pipeline
-- ✅ One language (TypeScript/JavaScript) → no context switching
-- ✅ Faster local setup → `npm install` + Postgres only
-- ✅ Prisma atomic transactions are as safe as SQLAlchemy
-- ✅ NextAuth.js JWT is equally secure
-- ✅ Vercel's free tier handles single-shop load effortlessly
-- ✅ Easier maintenance for one developer or a small team
-
-## 3. API Design (Next.js API Routes)
-
-REST JSON endpoints under `/api/v1/`. Each route is a file in the `app/api/v1/` directory.
-
-| Endpoint | Method | Purpose | Access |
+| Tier / Function | Primary Technology | Version | Justification & Architectural Benefit |
 |---|---|---|---|
-| `/api/v1/auth/login` | POST | Authenticate via username/password, return JWT session | Public |
-| `/api/v1/categories` | GET/POST | List/create categories | Owner (write), All (read) |
-| `/api/v1/products` | GET/POST/PATCH | List/create/update products | Owner (write), All (read) |
-| `/api/v1/products/[id]/stock-in` | POST | Add stock (quantity or IMEI list) | Owner |
-| `/api/v1/products/[id]/units` | GET | List serial units & status for a product | Owner |
-| `/api/v1/bills` | POST | Create a new bill (transactional stock deduction) | Owner, Staff |
-| `/api/v1/bills/[id]` | GET | Fetch a bill for viewing/printing | Owner, Staff |
-| `/api/v1/bills/[id]/void` | POST | Cancel a bill, restore stock | Owner |
-| `/api/v1/analytics/monthly` | GET | Monthly revenue, units sold, breakdown | Owner |
-| `/api/v1/users` | GET/POST | Manage staff accounts | Owner |
+| **Web Framework** | **Next.js (App Router)** | `16.1.6` | Unified frontend & backend with React Server Components, server actions, and high-performance client routing. |
+| **Frontend Library** | **React** | `19.0.0` | Latest concurrent rendering features, streamlined state management, and modern hook ergonomics. |
+| **Type Safety** | **TypeScript** | `5.7.3` | End-to-end type safety spanning database models, API contracts, PDF generation, and UI state. |
+| **Styling Framework** | **Tailwind CSS** | `4.0.0` | Utility-first CSS engine delivering rapid responsive UI design, modern color tokens, and optimized bundle footprints. |
+| **Database Engine** | **PostgreSQL (Neon)** | `16+` | Serverless relational database with automatic branching, connection pooling, and sub-second cold starts. |
+| **Object-Relational Mapper** | **Prisma ORM** | `6.4.1` | Declarative schema modeling, automated migrations, type-safe queries, and atomic multi-table transactions. |
+| **Authentication & Security** | **NextAuth.js** | `4.24.11` | Secure JWT sessions, encrypted cookie storage, and credentials provider with custom RBAC claims. |
+| **Cloud Object Storage** | **Supabase Storage** | `2.49.1` | Global CDN-backed S3-compatible asset storage for high-resolution customer woodworking references (`temp-images`). |
+| **Image Compression** | **HTML5 Canvas API** | Native | Client-side image pre-processing compressing 5–12MB smartphone photos into crisp 150–250KB JPEGs before upload. |
+| **Document Generation** | **html2canvas-pro + jsPDF** | `1.5.8` / `4.2.1` | Pixel-perfect on-device rendering of GST tax invoices, booking slips, and payment advice vouchers. |
+| **WhatsApp Protocol** | **@whiskeysockets/baileys** | `6.7.19` | Direct, lightweight WebSocket implementation of the WhatsApp Web Multi-Device protocol without third-party SaaS fees. |
+| **Message Queuing** | **Sequential FIFO Promise Queue** | Custom | Thread-safe in-memory task queue enforcing a 2,000ms delay between consecutive media uploads to prevent socket drops. |
+| **Icons & Visuals** | **Lucide React** | `0.475.0` | Comprehensive, consistent icon library matching modern enterprise standards. |
+| **Charts & Analytics** | **Recharts** | `2.15.1` | Declarative React charting library for sales trends, category contributions, and accounts receivable metrics. |
 
-**Middleware & Security:**
-- NextAuth.js session validation on every request
-- Role-based access control enforced at the route handler level
-- Cost price and profit fields **excluded from responses** for staff-role sessions in the middleware layer — not just hidden in the frontend
-- Prisma ORM prevents SQL injection; request validation via TypeScript types
+---
 
-## 4. Suggested Modular Folder Structure
+## 3. Specialized System Subsystems
 
-This structure separates concerns by domain (Auth, Products, Bills, Analytics) while keeping frontend and backend together in one Next.js project.
+### 3.1 Client-Side Image Compression Subsystem (`lib/image-compression.ts`)
+When showroom staff upload photos of custom furniture designs directly from smartphones, the images typically exceed 8MB. Uploading raw files causes severe network lag and exhausts bandwidth.
+- **Mechanism:** Draws incoming `File` objects onto an off-screen HTML5 `<canvas>`.
+- **Target Constraints:** Constrains maximum dimension to 1440px while maintaining the original aspect ratio.
+- **Output Quality:** Exports as JPEG at 0.78 quality, reducing payload size by 95% (typically **150KB to 250KB**) while preserving sharp woodworking and fabric details.
+- **Storage Path:** Uploaded directly to Supabase Storage at `bookings/{bookingNumber}/{timestamp}_{filename}.jpg`.
 
-```
-Furniture-and-Electronics/
-├── .env.local                 # Environment variables (DB URL, NextAuth secret)
-├── prisma/
-│   ├── schema.prisma          # Database schema (Prisma models)
-│   └── migrations/            # Auto-generated migration files
-│
-├── app/
-│   ├── layout.tsx             # Root layout
-│   ├── page.tsx               # Dashboard (home)
-│   ├── api/
-│   │   └── v1/
-│   │       ├── auth/
-│   │       │   ├── login/route.ts           # POST /api/v1/auth/login
-│   │       │   └── logout/route.ts          # POST /api/v1/auth/logout
-│   │       ├── categories/
-│   │       │   ├── route.ts                 # GET/POST /api/v1/categories
-│   │       │   └── [id]/route.ts            # GET/PATCH /api/v1/categories/[id]
-│   │       ├── products/
-│   │       │   ├── route.ts                 # GET/POST /api/v1/products
-│   │       │   ├── search/route.ts          # GET /api/v1/products/search
-│   │       │   ├── [id]/
-│   │       │   │   ├── route.ts             # GET/PATCH /api/v1/products/[id]
-│   │       │   │   ├── stock-in/route.ts    # POST /api/v1/products/[id]/stock-in
-│   │       │   │   └── units/route.ts       # GET /api/v1/products/[id]/units
-│   │       ├── bills/
-│   │       │   ├── route.ts                 # GET/POST /api/v1/bills
-│   │       │   └── [id]/
-│   │       │       ├── route.ts             # GET /api/v1/bills/[id]
-│   │       │       └── void/route.ts        # POST /api/v1/bills/[id]/void
-│   │       ├── analytics/
-│   │       │   └── monthly/route.ts         # GET /api/v1/analytics/monthly
-│   │       ├── users/
-│   │       │   └── route.ts                 # GET/POST /api/v1/users
-│   │       └── _middleware/                 # Auth & RBAC middleware
-│   │           ├── auth.ts                  # NextAuth setup & session validation
-│   │           └── rbac.ts                  # Role-based access control
-│   │
-│   ├── (auth)/                              # Auth pages (not visible in URL)
-│   │   └── login/
-│   │       └── page.tsx
-│   │
-│   ├── (dashboard)/                         # Protected dashboard pages
-│   │   ├── dashboard/
-│   │   │   └── page.tsx                     # Owner/Staff home screen
-│   │   ├── inventory/
-│   │   │   ├── page.tsx                     # Stock list
-│   │   │   ├── add-stock/page.tsx           # Add stock form
-│   │   │   └── [id]/page.tsx                # Product detail
-│   │   ├── billing/
-│   │   │   ├── page.tsx                     # Billing screen
-│   │   │   ├── cart/page.tsx                # Bill preview
-│   │   │   └── history/page.tsx             # Bill history
-│   │   ├── analytics/
-│   │   │   └── page.tsx                     # Monthly sales dashboard
-│   │   └── staff-management/
-│   │       └── page.tsx                     # Manage staff (owner only)
-│   │
-│   └── layout.tsx                           # Protected layout (auth guard)
-│
-├── components/                              # Reusable React components
-│   ├── auth/
-│   │   ├── LoginForm.tsx
-│   │   └── LogoutButton.tsx
-│   ├── inventory/
-│   │   ├── ProductList.tsx
-│   │   ├── AddStockForm.tsx
-│   │   ├── LowStockAlert.tsx
-│   │   └── CategoryFilter.tsx
-│   ├── billing/
-│   │   ├── ProductSearch.tsx
-│   │   ├── BillCart.tsx
-│   │   ├── BillPreview.tsx
-│   │   └── CustomerInfo.tsx
-│   ├── analytics/
-│   │   ├── RevenueChart.tsx
-│   │   ├── CategoryBreakdown.tsx
-│   │   ├── TopProducts.tsx
-│   │   └── MonthSelector.tsx
-│   ├── ui/                                  # Generic UI components
-│   │   ├── Button.tsx
-│   │   ├── Modal.tsx
-│   │   ├── Card.tsx
-│   │   ├── Badge.tsx
-│   │   └── Table.tsx
-│   └── layout/
-│       ├── Navbar.tsx
-│       └── Sidebar.tsx
-│
-├── lib/                                     # Utility functions & helpers
-│   ├── prisma.ts                            # Prisma client singleton
-│   ├── auth.ts                              # NextAuth configuration
-│   ├── api-client.ts                        # Fetch helper for /api routes
-│   ├── validators.ts                        # Input validation (stock quantity, IMEI, etc.)
-│   ├── utils.ts                             # General helpers (formatting, calculations)
-│   └── db-transactions.ts                   # Helper functions for atomic DB operations
-│
-├── types/                                   # TypeScript types & interfaces
-│   ├── models.ts                            # Mirrors Prisma schema (User, Product, Bill, etc.)
-│   ├── api.ts                               # API request/response types
-│   └── auth.ts                              # Auth context types
-│
-├── hooks/                                   # Custom React hooks
-│   ├── useAuth.ts                           # Auth context hook
-│   ├── useProducts.ts                       # Fetch/mutate products
-│   ├── useBills.ts                          # Fetch/create/void bills
-│   └── useAnalytics.ts                      # Fetch monthly analysis data
-│
-├── styles/
-│   └── globals.css                          # Tailwind imports
-│
-├── __tests__/                               # Jest test files (mirrors src structure)
-│   ├── api/
-│   │   ├── bills.test.ts                    # Test stock deduction transaction
-│   │   ├── products.test.ts
-│   │   └── analytics.test.ts
-│   └── components/
-│       ├── BillCart.test.tsx
-│       └── ProductSearch.test.tsx
-│
-├── package.json
-├── tsconfig.json
-├── next.config.js
-├── tailwind.config.js
-└── README.md
-```
+### 3.2 Dual-Document WhatsApp Notification Pipeline
+Advance bookings generate two distinct legal documents:
+1. **Advance Package Order Slip:** Displays full package breakdown, woodworking notes, design photos, financials, and signature lines.
+2. **Immediate Furniture Tax Invoice:** Official GST tax invoice (`#FURN-YYYY-NNNN`) for the furniture portion of the package.
 
-**Key Design Principles:**
-1. **Grouped by Domain** — Auth, Products, Bills, Analytics each have their own folder in `/api` and `/components`
-2. **Shallow Nesting** — 2–3 levels max, no deeply nested folders
-3. **Shared Utilities** — `lib/`, `types/`, `hooks/` are reused across all pages/routes
-4. **Type Safety** — All Prisma models auto-generate TypeScript types; API routes are fully typed
-5. **RBAC Enforced Server-Side** — Middleware in `/api/_middleware/` checks role before any route handler runs
-6. **Atomic Transactions** — Complex operations (stock deduction) live in `lib/db-transactions.ts` and are called from route handlers
+**The Media Collision Problem & Solution:**
+- *Problem:* Baileys WebSocket drops consecutive media payloads sent within milliseconds because the underlying WhatsApp Web socket cannot process overlapping upload streams.
+- *Solution:* Implemented an in-memory sequential FIFO queue with an active dispatch lock and a **2,000ms cooldown window** between document uploads. The first PDF is delivered, the socket stabilizes, and the second PDF is transmitted cleanly.
 
-## 5. Why Not Alternatives
+### 3.3 Safe Server/Client Boundary Architecture
+To guarantee that server-side API routes remain completely free from browser-only DOM dependencies:
+- Pure business helpers (such as photo URL parsing) are strictly isolated in `lib/booking-photos.ts` with zero React or canvas imports.
+- DOM-dependent PDF generators are isolated in `lib/pdf/booking-slip.ts` and marked explicitly with the `"use client"` directive.
 
-- **Separate Backend (FastAPI/Node.js):** Would require managing 2 deployments, 2 services, 2 databases on separate hosts. Overkill for a single-shop system. Next.js API Routes give you the same security & performance with half the operational burden.
-- **MongoDB instead of PostgreSQL:** Inventory/billing is textbook relational (foreign keys, joins, transactions). A document DB would force you to re-build relational integrity by hand — more code, more bugs, more risk of stock-count desynchs.
-- **React Router / Vite instead of Next.js:** Both work fine for a UI this size. Next.js is chosen for built-in routing, file-based structure, and simpler deployment to Vercel.
-- **Tailwind alternatives (Bootstrap, Material-UI):** Both work. Tailwind is lighter, faster to customize for a minimal design, and has great documentation.
+---
 
-These are genuinely close calls — the key decision is **one unified Next.js app** (simpler deployment, faster iteration) vs. **separate backend** (only if you had multiple frontends or a large team), and this project doesn't need the latter.
+## 4. Hosting & Deployment Topology
+
+| Component | Target Platform | Environment & Runtime | Persistence / Volumes |
+|---|---|---|---|
+| **Main Web Application** | **Vercel** | Node.js Serverless Edge / Node 20 | Stateless serverless compute |
+| **Primary Database** | **Neon PostgreSQL** | Cloud Serverless PostgreSQL 16 | Managed cloud storage with daily automated backups |
+| **Cloud File Storage** | **Supabase Storage** | Global CDN S3 Bucket (`temp-images`) | Managed cloud object storage |
+| **WhatsApp Bot (Prod)** | **Northflank** | Containerized Docker Node 20 Service | Persistent NVMe Volume mounted at `/app/whatsapp-sessions` |
+| **WhatsApp Daemon (Dev)** | **Localhost** | Node.js 20+ Native HTTP (`scripts/local-whatsapp-daemon.js`) | Local file directory (`.whatsapp-sessions/`) |
