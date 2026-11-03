@@ -296,7 +296,14 @@ export default function BillingHistoryPage() {
                         ? "bg-[#093F52] text-white border border-[#105269] border-b-[#052531] shadow-[0_2px_0_#052531,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]"
                         : "bg-[#235347] text-white border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]"
                     }`}>
-                      {bill.department === "ELECTRONICS" ? "⚡ Electronics" : "🪑 Furniture"}
+                      {bill.department === "ELECTRONICS" ? (
+                        <>⚡ Electronics</>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5">
+                          <img src="/furniture-logo-icon.png" alt="Furniture" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
+                          <span>Furniture</span>
+                        </span>
+                      )}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

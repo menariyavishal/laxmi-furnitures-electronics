@@ -178,7 +178,14 @@ export default function PurchaseTable({
                           : "bg-[#235347] text-white border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)]"
                       }`}
                     >
-                      {p.department === "ELECTRONICS" ? "⚡ Elec" : "🪑 Furn"}
+                      {p.department === "ELECTRONICS" ? (
+                        "⚡ Elec"
+                      ) : (
+                        <span className="inline-flex items-center gap-1">
+                          <img src="/furniture-logo-icon.png" alt="Furn" className="w-3 h-3 object-contain inline-block shrink-0" />
+                          <span>Furn</span>
+                        </span>
+                      )}
                     </span>
                   </td>
 

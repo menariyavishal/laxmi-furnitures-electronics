@@ -51,7 +51,13 @@ export default function DepartmentSwitcher({
                 : "text-slate-300 hover:text-white hover:bg-white/[0.06] border border-transparent"
             }`}
           >
-            <span className="text-sm md:text-base">{item.icon}</span>
+            <span className="text-sm md:text-base flex items-center justify-center">
+              {key === "FURNITURE" ? (
+                <img src="/furniture-logo-icon.png" alt="Furniture" className="w-4 h-4 object-contain inline-block shrink-0 drop-shadow-xs" />
+              ) : (
+                item.icon
+              )}
+            </span>
             <span>{item.shortLabel}</span>
           </button>
         );

@@ -119,7 +119,7 @@ export default function BookingHistoryRow({
               className="inline-flex items-center gap-1.5 font-semibold text-white bg-[#235347] hover:brightness-110 px-2.5 py-0.5 rounded-md border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] transition-all font-mono"
               title="View Furniture Invoice"
             >
-              <span>🪑</span>
+              <img src="/furniture-logo-icon.png" alt="Furniture" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
               <span>{furnitureBill.billNumber}</span>
             </Link>
             {Number(furnitureBill.dueAmount || 0) === 0 ? (

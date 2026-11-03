@@ -375,12 +375,22 @@ export default function DuePaymentsPage() {
                           #{bill.billNumber}
                         </Link>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md inline-flex items-center gap-1 ${
                             (bill.department || "FURNITURE").toUpperCase() === "FURNITURE"
                               ? "bg-[#235347] text-white border border-[#2F6859] border-b-[#14352D] shadow-[0_1.5px_0_#14352D,inset_0_1px_0_rgba(255,255,255,0.25)]"
                               : "bg-[#093F52] text-white border border-[#105269] border-b-[#052531] shadow-[0_1.5px_0_#052531,inset_0_1px_0_rgba(255,255,255,0.25)]"
                           }`}>
-                            {(bill.department || "FURNITURE").slice(0, 4)}
+                            {(bill.department || "FURNITURE").toUpperCase() === "FURNITURE" ? (
+                              <>
+                                <img src="/furniture-logo-icon.png" alt="Furn" className="w-3 h-3 object-contain inline-block shrink-0" />
+                                <span>FURN</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>⚡</span>
+                                <span>ELEC</span>
+                              </>
+                            )}
                           </span>
                           <span
                             className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${

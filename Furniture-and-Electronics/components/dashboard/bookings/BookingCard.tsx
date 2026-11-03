@@ -235,8 +235,9 @@ export default function BookingCard({
             <span>Reserved Items ({booking.bookingItems.length})</span>
             <div className="flex gap-1.5">
               {furnitureItems.length > 0 && (
-                <span className="bg-[#235347] text-white px-2.5 py-0.5 rounded-md border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold text-[11px]">
-                  {furnitureItems.length} Furniture
+                <span className="bg-[#235347] text-white px-2.5 py-0.5 rounded-md border border-[#2F6859] border-b-[#14352D] shadow-[0_2px_0_#14352D,0_3px_5px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.3)] font-bold text-[11px] inline-flex items-center gap-1.5">
+                  <img src="/furniture-logo-icon.png" alt="Furniture" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
+                  <span>{furnitureItems.length} Furniture</span>
                 </span>
               )}
               {electronicsItems.length > 0 && (

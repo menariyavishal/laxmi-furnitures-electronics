@@ -290,7 +290,11 @@ export default function InventoryPage() {
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold text-black">Inventory</h2>
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${deptConfig.badgeBg} ${deptConfig.badgeText}`}>
-            <span>{deptConfig.icon}</span>
+            {department === "FURNITURE" ? (
+              <img src="/furniture-logo-icon.png" alt="Furniture" className="w-3.5 h-3.5 object-contain inline-block shrink-0" />
+            ) : (
+              <span>{deptConfig.icon}</span>
+            )}
             <span>{deptConfig.label}</span>
           </span>
         </div>
