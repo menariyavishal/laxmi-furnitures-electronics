@@ -1,5 +1,5 @@
 export const fetcher = async (url: string) => {
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: "no-store" });
 
   // If the status code is not in the range 200-299,
   // we still try to parse and throw it.

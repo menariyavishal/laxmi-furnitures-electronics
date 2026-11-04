@@ -3,6 +3,29 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
+// In-memory cache for excluded category IDs (10-minute TTL)
+const categoryCache = new Map<string, { ids: number[]; timestamp: number }>();
+const CATEGORY_CACHE_TTL = 10 * 60 * 1000;
+
+async function getExcludedCategoryIds(categoryName: string): Promise<number[]> {
+  const key = categoryName.trim().toLowerCase();
+  const cached = categoryCache.get(key);
+  const now = Date.now();
+  if (cached && now - cached.timestamp < CATEGORY_CACHE_TTL) {
+    return cached.ids;
+  }
+  const excludeCat = await prisma.category.findFirst({
+    where: { name: { equals: categoryName.trim(), mode: "insensitive" as const } },
+    include: { subCategories: { select: { id: true } } },
+  });
+  if (!excludeCat) return [];
+  const ids = [excludeCat.id, ...excludeCat.subCategories.map((sc) => sc.id)];
+  categoryCache.set(key, { ids, timestamp: now });
+  return ids;
+}
+
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -43,41 +66,48 @@ export async function GET(req: Request) {
     }
 
     if (excludeCategoryName) {
-      // Direct instant bypass for Accessories: eliminates the expensive 800ms category query
-      if (excludeCategoryName.toLowerCase() === "accessories") {
-        where.productType = { not: "quantity" };
-      } else {
-        const excludeCat = await prisma.category.findFirst({
-          where: { name: { equals: excludeCategoryName, mode: 'insensitive' } },
-          include: { subCategories: true }
-        });
-        
-        if (excludeCat) {
-          const excludeCatIds = [excludeCat.id, ...excludeCat.subCategories.map(sc => sc.id)];
-          where.categoryId = {
-            ...(where.categoryId || {}),
-            notIn: excludeCatIds
-          };
-        }
+      const excludeCatIds = await getExcludedCategoryIds(excludeCategoryName);
+      if (excludeCatIds.length > 0) {
+        where.categoryId = {
+          ...(where.categoryId || {}),
+          notIn: excludeCatIds,
+        };
       }
     }
 
-    if (search) {
-      const orConditions: any[] = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { brand: { contains: search, mode: 'insensitive' } },
-        { barcode: { contains: search, mode: 'insensitive' } },
-      ];
-
-      // Only search IMEIs if the query contains digits (IMEIs are numeric numbers)
-      // Prevents running an expensive correlated subquery across product_units for words like 'vivo' or 'oppo'
-      if (/\d/.test(search)) {
-        orConditions.push({
-          units: { some: { imeiNumber: { contains: search, mode: 'insensitive' } } },
+    if (search && search.trim()) {
+      const words = search.trim().split(/\s+/).filter(Boolean);
+      if (words.length === 1) {
+        const term = words[0];
+        const orConditions: any[] = [
+          { name: { contains: term, mode: "insensitive" as const } },
+          { brand: { contains: term, mode: "insensitive" as const } },
+          { barcode: { contains: term, mode: "insensitive" as const } },
+          { category: { name: { contains: term, mode: "insensitive" as const } } },
+        ];
+        if (/\d/.test(term)) {
+          orConditions.push({
+            units: { some: { imeiNumber: { contains: term, mode: "insensitive" as const } } },
+          });
+        }
+        where.OR = orConditions;
+      } else {
+        // Multi-word search (e.g. "dell mouse", "mouse wire")
+        where.AND = words.map((word) => {
+          const wordConditions: any[] = [
+            { name: { contains: word, mode: "insensitive" as const } },
+            { brand: { contains: word, mode: "insensitive" as const } },
+            { barcode: { contains: word, mode: "insensitive" as const } },
+            { category: { name: { contains: word, mode: "insensitive" as const } } },
+          ];
+          if (/\d/.test(word)) {
+            wordConditions.push({
+              units: { some: { imeiNumber: { contains: word, mode: "insensitive" as const } } },
+            });
+          }
+          return { OR: wordConditions };
         });
       }
-
-      where.OR = orConditions;
     }
 
     const pageStr = searchParams.get("page");

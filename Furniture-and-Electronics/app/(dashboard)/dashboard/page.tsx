@@ -55,12 +55,13 @@ export default function DashboardPage() {
     ? `/api/v1/dashboard/stats?department=${encodeURIComponent(department)}`
     : "/api/v1/dashboard/stats";
 
-  const { data: stats, mutate: mutateStats } = useSWR(statsUrl, fetcher, { dedupingInterval: 5000, refreshInterval: 25000, revalidateOnFocus: false });
-  const { data: notifications, mutate: mutateNotifications } = useSWR("/api/v1/dashboard/notifications", fetcher, { dedupingInterval: 5000, refreshInterval: 25000, revalidateOnFocus: false });
-  const { data: overdueData, mutate: mutateOverdue, error: swrError } = useSWR("/api/v1/due-payments?overdue=true", fetcher, { dedupingInterval: 5000, refreshInterval: 25000, revalidateOnFocus: false });
+  const { data: stats, mutate: mutateStats } = useSWR(statsUrl, fetcher, { dedupingInterval: 2000, refreshInterval: 15000, revalidateOnFocus: true });
+  const { data: notifications, mutate: mutateNotifications } = useSWR("/api/v1/dashboard/notifications", fetcher, { dedupingInterval: 2000, refreshInterval: 15000, revalidateOnFocus: true });
+  const { data: overdueData, mutate: mutateOverdue, error: swrError } = useSWR("/api/v1/due-payments?overdue=true", fetcher, { dedupingInterval: 2000, refreshInterval: 15000, revalidateOnFocus: true });
   
   const [overduePayments, setOverduePayments] = useState<any[]>([]);
   const [sendingWhatsappId, setSendingWhatsappId] = useState<number | null>(null);
+  const [isDismissingOverdue, setIsDismissingOverdue] = useState(false);
   
   const loading = !stats || !notifications || !overdueData;
   const error = swrError ? "Failed to load dashboard metrics" : "";
@@ -235,6 +236,43 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDismissAllOverdue = async () => {
+    if (overduePayments.length === 0) return;
+    try {
+      setIsDismissingOverdue(true);
+      const billIds = overduePayments.map((b) => b.id);
+      const res = await fetch("/api/v1/due-payments/snooze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ billIds }),
+      });
+      if (!res.ok) throw new Error("Failed to reset overdue timers");
+      setOverduePayments([]);
+      mutateOverdue([]);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to dismiss overdue section");
+    } finally {
+      setIsDismissingOverdue(false);
+    }
+  };
+
+  const handleDismissSingleOverdue = async (billId: number) => {
+    try {
+      const res = await fetch("/api/v1/due-payments/snooze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ billIds: [billId] }),
+      });
+      if (!res.ok) throw new Error("Failed to reset reminder timer");
+      setOverduePayments((prev) => prev.filter((p) => p.id !== billId));
+      mutateOverdue();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to dismiss customer");
+    }
+  };
+
   const fetchData = async () => {
     mutateStats();
     mutateNotifications();
@@ -294,12 +332,6 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={fetchData}
-            className="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 font-semibold py-2 px-3 border border-gray-200 rounded-lg text-sm transition"
-          >
-            🔄 Refresh
-          </button>
           <Link
             href="/bookings"
             className="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-3.5 rounded-lg text-sm transition shadow-sm flex items-center gap-1.5"
@@ -336,7 +368,7 @@ export default function DashboardPage() {
               )}
             </h3>
             <p className="text-xs text-gray-500 mt-1 max-w-xl">
-              Connect Lalit Menariya's WhatsApp account to automatically deliver professionally-formatted PDF invoices directly to clients upon checkout.
+              Connect WhatsApp account to automatically deliver professionally-formatted PDF invoices directly to clients upon checkout.
             </p>
             {whatsappSettings?.status === "connected" && whatsappSettings?.ownerPhone && (
               <p className="text-xs font-semibold text-green-700 mt-2 flex items-center gap-1">
@@ -379,13 +411,27 @@ export default function DashboardPage() {
       {/* OVERDUE PAYMENTS REMINDER COMPONENT */}
       {overduePayments.length > 0 && (
         <div className="bg-[#FDF2F2] border border-[#780000]/20 p-6 rounded-2xl shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-[#FEE2E2] text-[#780000] rounded-lg">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#FEE2E2] text-[#780000] rounded-lg">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-[#780000]">Urgent: Overdue Payments (15+ Days)</h3>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#780000]">
+                {overduePayments.length}
+              </span>
             </div>
-            <h3 className="text-lg font-bold text-[#780000]">Urgent: Overdue Payments (15+ Days)</h3>
+            <button
+              type="button"
+              onClick={handleDismissAllOverdue}
+              disabled={isDismissingOverdue}
+              className="p-1.5 rounded-lg text-[#780000]/70 hover:text-[#780000] hover:bg-[#FEE2E2] transition-colors flex items-center justify-center text-sm font-bold disabled:opacity-50"
+              title="Dismiss & reset reminder timer for all overdue customers"
+            >
+              ✕
+            </button>
           </div>
           
           <div className="max-h-[340px] overflow-y-auto pr-2 custom-scrollbar">
@@ -439,9 +485,21 @@ export default function DashboardPage() {
                         <div className="font-bold text-gray-900 truncate" title={bill.customer?.name}>
                           {bill.customer?.name || "Guest"}
                         </div>
-                        <Link href={`/billing/${bill.id}`} className="text-xs font-bold text-blue-600 hover:underline">
-                          #{bill.billNumber}
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link href={`/billing/${bill.id}`} className="text-xs font-bold text-blue-600 hover:underline">
+                            #{bill.billNumber}
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => handleDismissSingleOverdue(bill.id)}
+                            className="text-gray-400 hover:text-[#780000] hover:bg-red-50 rounded p-0.5 transition"
+                            title="Reset reminder timer for this customer"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                       <div className="text-sm text-gray-600 mb-1">{bill.customer?.phone || bill.customerPhone || "No Phone"}</div>
                       <div className="text-sm font-black text-[#780000]">Due: ₹{parseFloat(bill.dueAmount).toFixed(2)}</div>
@@ -481,7 +539,9 @@ export default function DashboardPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Products</p>
               <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-800 mt-2 break-words">{stats?.totalProducts}</h3>
             </div>
-            <span className="p-2 bg-blue-55 rounded-lg text-blue-600 text-lg">📦</span>
+            <span className="p-2.5 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+              <img src="/package.svg" alt="Total Products" className="w-6 h-6 object-contain" />
+            </span>
           </div>
           <p className="text-xs text-gray-500 mt-4 flex items-center gap-1">
             <span>Active SKU catalog items</span>
@@ -496,7 +556,9 @@ export default function DashboardPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Stock Units</p>
               <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-800 mt-2 break-words">{stats?.totalStockUnits}</h3>
             </div>
-            <span className="p-2 bg-emerald-55 rounded-lg text-emerald-600 text-lg">📊</span>
+            <span className="p-2.5 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
+              <img src="/boxes.svg" alt="Total Stock Units" className="w-6 h-6 object-contain" />
+            </span>
           </div>
           <p className="text-xs text-gray-500 mt-4 flex items-center gap-1">
             <span>Total units currently in warehouse</span>
@@ -518,7 +580,9 @@ export default function DashboardPage() {
                 {stats?.todayProfit != null ? `₹${stats.todayProfit.toFixed(2)}` : "—"}
               </h3>
             </div>
-            <span className="p-2 bg-green-50 rounded-lg text-green-600 text-lg">💸</span>
+            <span className="p-2.5 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
+              <img src="/chart-no-axes-combined.svg" alt="Today's Profit" className="w-6 h-6 object-contain" />
+            </span>
           </div>
           <p className="text-xs text-gray-500 mt-4 flex items-center gap-1">
             <span className="text-green-600 font-semibold">{stats?.todayProfit != null ? "↑ Current Day" : "🔒 Owner Only"}</span>
@@ -540,7 +604,9 @@ export default function DashboardPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Today's Sales</p>
               <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-800 mt-2 break-words">₹{stats?.todaySales?.toFixed(2)}</h3>
             </div>
-            <span className="p-2 bg-indigo-55 rounded-lg text-indigo-600 text-lg">💰</span>
+            <span className="p-2.5 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
+              <img src="/shopping-cart.svg" alt="Today's Sales" className="w-6 h-6 object-contain" />
+            </span>
           </div>
           <p className="text-xs text-gray-500 mt-4 flex items-center gap-1">
             <span className="text-green-600 font-semibold">📈 Current Day</span>
@@ -556,7 +622,9 @@ export default function DashboardPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Monthly Sales</p>
               <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-800 mt-2 break-words">₹{stats?.monthlySales?.toFixed(2)}</h3>
             </div>
-            <span className="p-2 bg-cyan-55 rounded-lg text-cyan-600 text-lg">📅</span>
+            <span className="p-2.5 bg-cyan-50 rounded-xl flex items-center justify-center shrink-0">
+              <img src="/calendar-days.svg" alt="Monthly Sales" className="w-6 h-6 object-contain" />
+            </span>
           </div>
           <p className="text-xs text-gray-500 mt-4 flex items-center gap-1">
             <span>Cumulative calendar month total</span>
@@ -571,7 +639,9 @@ export default function DashboardPage() {
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Stock Worth</p>
               <h3 className="text-2xl xl:text-3xl font-extrabold text-gray-800 mt-2 break-words">₹{stats?.totalStockValue?.toFixed(2) || "0.00"}</h3>
             </div>
-            <span className="p-2 bg-amber-55 rounded-lg text-amber-600 text-lg">💎</span>
+            <span className="p-2.5 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+              <img src="/indian-rupee.svg" alt="Total Stock Worth" className="w-6 h-6 object-contain" />
+            </span>
           </div>
           <p className="text-xs text-gray-500 mt-4 flex items-center gap-1">
             <span>Capital tied up in current inventory</span>

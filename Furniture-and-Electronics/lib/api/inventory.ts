@@ -2,7 +2,7 @@ export async function getCategories(department?: string) {
   const url = department && department !== "ALL"
     ? `/api/v1/categories?department=${encodeURIComponent(department)}`
     : "/api/v1/categories";
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch categories");
   return res.json();
 }
@@ -38,7 +38,7 @@ export async function getProducts(
   if (limit !== undefined) params.append("limit", limit.toString());
 
   const url = `/api/v1/products${params.toString() ? `?${params.toString()}` : ""}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch products");
   return res.json();
 }

@@ -97,7 +97,7 @@ export default function BookingHistoryRow({
 
       {/* Booking Number */}
       <td className="px-4 py-3 whitespace-nowrap">
-        <span className="font-extrabold text-blue-900 bg-blue-50 px-2 py-1 rounded border border-blue-200/60 font-mono">
+        <span className="inline-flex items-center font-extrabold text-white bg-[#5A94C1] px-2.5 py-1 rounded-md border border-[#6EA6CF] border-b-[#3E7197] shadow-[0_2px_0_#3E7197,0_3px_5px_rgba(45,85,115,0.22),inset_0_1px_0_rgba(255,255,255,0.35)] font-mono text-[11px] tracking-tight">
           {booking.bookingNumber}
         </span>
       </td>
@@ -292,10 +292,10 @@ export default function BookingHistoryRow({
         <button
           type="button"
           onClick={() => onViewSlip(booking)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#5A94C1] hover:brightness-110 active:translate-y-0.5 active:shadow-[0_1px_0_#3E7197] text-white text-xs font-bold border border-[#6EA6CF] border-b-[#3E7197] shadow-[0_2px_0_#3E7197,0_3px_5px_rgba(45,85,115,0.22),inset_0_1px_0_rgba(255,255,255,0.35)] transition-all cursor-pointer"
           title="View & Print Package Slip"
         >
-          <FaEye className="w-3 h-3" />
+          <FaEye className="w-3 h-3 text-white/90" />
           <span>Package Slip</span>
         </button>
       </td>

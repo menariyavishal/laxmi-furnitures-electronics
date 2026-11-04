@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { addStock } from "@/lib/api/inventory";
+import { mutate } from "swr";
 
 export default function AddStockPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { getProducts } from "@/lib/api/inventory";
 import { searchCustomer, createBill } from "@/lib/api/billing";
+import { mutate } from "swr";
 import { useReactToPrint } from "react-to-print";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -140,7 +141,7 @@ export default function BillingPage() {
     setIsSearchingProduct(true);
     const delayDebounce = setTimeout(async () => {
       try {
-        const res = await getProducts(undefined, searchQuery, undefined, undefined, 15, "quantity");
+        const res = await getProducts(undefined, searchQuery, "Accessories", undefined, 15);
         const items = Array.isArray(res) ? res : (res?.items || []);
         setSearchResults(items);
         setIsDropdownOpen(true);
@@ -324,6 +325,7 @@ export default function BillingPage() {
       }
 
       const bill = await createBill(billData);
+      await mutate((key) => true);
       setCreatedBill(bill);
       setShowPrintModal(true);
       

@@ -55,7 +55,7 @@ export default function InventoryPage() {
     getKey,
     ([_, cat, search, dept, p]: [string, number | undefined, string, string, number]) =>
       getProducts(cat, search, undefined, p, 50, undefined, undefined, dept),
-    { dedupingInterval: 1000, revalidateFirstPage: true, revalidateOnFocus: true, refreshInterval: 25000 }
+    { dedupingInterval: 2000, revalidateFirstPage: true, revalidateOnFocus: true, refreshInterval: 15000 }
   );
 
   const products: any[] = data ? [].concat(...data.map((d: any) => Array.isArray(d) ? d : d.items || [])) : [];

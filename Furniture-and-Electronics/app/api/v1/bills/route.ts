@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -11,7 +13,7 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get("search") || "";
+    const search = (searchParams.get("search") || "").trim();
     const pageStr = searchParams.get("page");
     const limitStr = searchParams.get("limit");
     const department = searchParams.get("department");
@@ -34,9 +36,9 @@ export async function GET(req: Request) {
 
     if (search) {
       where.OR = [
-        { billNumber: { contains: search, mode: "insensitive" } },
+        { billNumber: { contains: search, mode: "insensitive" as const } },
         { customer: { phone: { contains: search } } },
-        { customer: { name: { contains: search, mode: "insensitive" } } },
+        { customer: { name: { contains: search, mode: "insensitive" as const } } },
       ];
     }
 

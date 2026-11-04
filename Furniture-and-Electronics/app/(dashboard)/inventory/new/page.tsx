@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getCategories, createCategory, createProduct } from "@/lib/api/inventory";
+import { mutate } from "swr";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import CategorySelector from "@/components/dashboard/CategorySelector";
