@@ -181,14 +181,14 @@ export async function POST(req: Request) {
         orderBy: { id: 'desc' }
       });
       
-      let nextBillNo = "301";
+      let nextBillNo = "1";
       if (lastStandardBill) {
         const lastNo = parseInt(lastStandardBill.billNumber, 10);
         if (!isNaN(lastNo)) {
           nextBillNo = (lastNo + 1).toString();
         } else {
           const count = await tx.bill.count({ where: { NOT: { billNumber: { startsWith: "QS-" } } } });
-          nextBillNo = (300 + count + 1).toString();
+          nextBillNo = (count + 1).toString();
         }
       }
 
