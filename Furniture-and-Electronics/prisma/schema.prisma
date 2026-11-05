@@ -267,7 +267,7 @@ model PasswordResetToken {
 
 model WhatsappSettings {
   id                   Int     @id @default(autoincrement())
-  ownerPhone           String  @default("6375591682") @map("owner_phone")
+  ownerPhone           String  @default("8209399683") @map("owner_phone")
   status               String  @default("disconnected") @map("status")
   qrCode               String? @map("qr_code")
   simulateFailures     Boolean @default(false) @map("simulate_failures")

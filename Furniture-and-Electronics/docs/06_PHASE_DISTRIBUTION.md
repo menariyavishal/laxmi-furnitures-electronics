@@ -2,7 +2,7 @@
 ## Laxmi Electronics & Furnitures — Implementation History & Milestone Breakdown
 
 **Version:** 2.0 (Production Release)  
-**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
+**Location:** Main Market, Bhinder, Udaipur (Raj.) — Helpline: +91 820 939 9683  
 
 ---
 
@@ -59,7 +59,7 @@
 - **Local Development Daemon (`scripts/local-whatsapp-daemon.js`):** Built a standalone daemon using Node.js native `http` module that exclusively loads `.env.local` to enable local testing without internet webhooks or Express dependencies.
 - **Sequential FIFO Queue (`whatsapp-bot/queue.js`):** Resolved the Baileys WebSocket media collision issue where sending two back-to-back PDFs (Booking Slip + Furniture Invoice) caused the second upload to drop. The queue enforces an active dispatch lock and a **2,000ms cooldown window** between media transmissions.
 - **Base64 Payload Sanitization:** Robust regex parser stripping `data:application/pdf;base64,` prefixes before creating binary buffers.
-- **Concise Message Templates (`lib/whatsapp/templates.ts`):** Rewrote message templates to eliminate bloated package breakdowns and provide clean, professional summaries with the official store helpline (`+91 63755 91682`).
+- **Concise Message Templates (`lib/whatsapp/templates.ts`):** Rewrote message templates to eliminate bloated package breakdowns and provide clean, professional summaries with the official store helpline (`+91 820 939 9683`).
 
 ---
 

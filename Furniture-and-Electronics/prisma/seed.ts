@@ -1,18 +1,24 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
-import { PrismaNeon } from '@prisma/adapter-neon'
-import ws from 'ws'
-
-const { neonConfig } = require('@neondatabase/serverless')
-neonConfig.webSocketConstructor = ws
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set')
 }
 
-const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL })
-const prisma = new PrismaClient({ adapter })
+// In CLI / Node scripts, standard PrismaClient connects directly via TCP/TLS without fragile WebSockets
+const cleanDbUrl = process.env.DATABASE_URL
+  .replace(/([?&])channel_binding=[^&]+(&|$)/, '$1')
+  .replace(/\?$/, '')
+  .replace(/&&/, '&')
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: cleanDbUrl,
+    },
+  },
+})
 
 async function main() {
   console.log('Seeding initial production login credentials only...')

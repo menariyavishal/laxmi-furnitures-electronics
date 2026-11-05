@@ -21,7 +21,7 @@ export async function getWhatsappSettings() {
   if (!settings) {
     settings = await prisma.whatsappSettings.create({
       data: {
-        ownerPhone: "6375591682",
+        ownerPhone: "8209399683",
         status: "disconnected",
         simulateFailures: false,
         simulateSessionError: false,

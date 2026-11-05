@@ -120,7 +120,7 @@ async function runTestSuite() {
         data: {
           name: "Test Wedding Family",
           phone: testCustomerPhone,
-          address: "Kanore Town, Udaipur",
+          address: "Bhinder Town, Udaipur",
         },
       });
     }
@@ -498,7 +498,7 @@ async function runTestSuite() {
       dueAmount: 50000,
     });
     assert(billMsg.includes("LAXMI ELECTRONICS & FURNITURES"), "Bill message contains store brand");
-    assert(billMsg.includes("+91 63755 91682"), "Bill message contains official store helpline (+91 63755 91682)");
+    assert(billMsg.includes("+91 820 939 9683"), "Bill message contains official store helpline (+91 820 939 9683)");
     assert(billMsg.includes("₹50,000"), "Bill message displays pending due balance");
 
     const bookingMsg = formatBookingNewMessage({

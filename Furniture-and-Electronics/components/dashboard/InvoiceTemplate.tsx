@@ -200,10 +200,10 @@ export default function InvoiceTemplate({
               Laxmi Electronics & Furnitures
             </h1>
             <p className="text-[12px] text-gray-800 font-medium mt-0.5">
-              Main Market, Kanore, Udaipur (Raj.)
+              Bhinder, Udaipur (Raj.)
             </p>
             <p className="text-[12px] font-bold text-black mt-0.5">
-              Mobile: +91 63755 91682
+              Mobile: +91 820 939 9683
             </p>
           </div>
 
@@ -529,7 +529,7 @@ export default function InvoiceTemplate({
               <li>गारंटी क्मप्लेन प्रोडक्ट रिप्लेश का गाड़ी किराया कस्टमर का रहेगा</li>
             </ol>
             <p className="font-bold text-black mt-1 text-[9.5px]">
-              Helpline Number: +91 63755 91682 (Suraj Menariya)
+              Helpline Number: +91 820 939 9683 (Suraj Menariya)
             </p>
           </div>
 

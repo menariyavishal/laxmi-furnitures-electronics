@@ -14,7 +14,7 @@ import {
   VendorPaymentTemplateData,
 } from "./types";
 
-const STORE_SIGNATURE = `📞 Helpline & Support: +91 63755 91682\n_Laxmi Electronics & Furnitures, Main Market, Kanore_`;
+const STORE_SIGNATURE = `📞 Helpline & Support: +91 820 939 9683\n_Laxmi Electronics & Furnitures, Main Market, Bhinder_`;
 
 function formatCurrency(amount: number): string {
   return Number(amount || 0).toLocaleString("en-IN");

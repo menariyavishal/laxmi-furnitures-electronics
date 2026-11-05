@@ -194,7 +194,7 @@ Tax invoices generated for walk-in purchases or booking fulfillments:
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | `INT` | Primary Key | Single-row configuration ID |
-| `owner_phone` | `VARCHAR` | DEFAULT "6375591682" | Official showroom WhatsApp number |
+| `owner_phone` | `VARCHAR` | DEFAULT "8209399683" | Official showroom WhatsApp number |
 | `status` | `VARCHAR` | DEFAULT "disconnected" | Connection status (`connected`, `connecting`, `disconnected`) |
 | `qr_code` | `TEXT` | Nullable | Active QR code string for device pairing |
 | `simulate_failures`| `BOOLEAN`| DEFAULT false | Development debugging flag |

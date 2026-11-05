@@ -243,7 +243,7 @@ const tablesData = [
     x: 1620, y: 460,
     columns: [
       { name: "id", type: "SERIAL", pk: true, uq: true, nn: true, comment: "Primary Key" },
-      { name: "owner_phone", type: "TEXT", pk: false, uq: false, nn: true, comment: "Owner WhatsApp phone", default: "'6375591682'" },
+      { name: "owner_phone", type: "TEXT", pk: false, uq: false, nn: true, comment: "Owner WhatsApp phone", default: "'8209399683'" },
       { name: "status", type: "TEXT", pk: false, uq: false, nn: true, comment: "connected | disconnected", default: "'disconnected'" },
       { name: "qr_code", type: "TEXT", pk: false, uq: false, nn: false, comment: "Base64 QR code" },
       { name: "simulate_failures", type: "BOOLEAN", pk: false, uq: false, nn: true, comment: "Debug flag", default: "false" },

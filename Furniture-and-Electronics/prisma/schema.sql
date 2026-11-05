@@ -295,7 +295,7 @@ ALTER TABLE "finance_records" ADD CONSTRAINT "finance_records_finance_provider_i
 -- ----------------------------------------------------------------------------
 CREATE TABLE "whatsapp_settings" (
     "id" SERIAL NOT NULL,
-    "owner_phone" TEXT NOT NULL DEFAULT '6375591682',
+    "owner_phone" TEXT NOT NULL DEFAULT '8209399683',
     "status" TEXT NOT NULL DEFAULT 'disconnected',
     "qr_code" TEXT,
     "simulate_failures" BOOLEAN NOT NULL DEFAULT false,

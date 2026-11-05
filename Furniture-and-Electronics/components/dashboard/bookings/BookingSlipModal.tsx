@@ -151,7 +151,7 @@ export default function BookingSlipModal({
             <p className="text-xs text-gray-600 font-medium mt-0.5">
               Complete Wedding Packages, Electronics & Home Furnishings
             </p>
-            <p className="text-xs text-gray-500">Main Market, Kanore | Phone: +91 63755 91682</p>
+            <p className="text-xs text-gray-500">Bhinder | Phone: +91 820 939 9683</p>
             {isDelivered ? (
               <div className="mt-2.5 inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider border border-emerald-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />

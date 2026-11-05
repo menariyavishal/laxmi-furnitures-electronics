@@ -8,7 +8,7 @@ async function getSettings() {
   if (res.rows.length === 0) {
     const created = await pool.query(`
       INSERT INTO "whatsapp_settings" (owner_phone, status, simulate_failures, simulate_session_error)
-      VALUES ('6375591682', 'disconnected', false, false)
+      VALUES ('8209399683', 'disconnected', false, false)
       RETURNING *
     `);
     return created.rows[0];

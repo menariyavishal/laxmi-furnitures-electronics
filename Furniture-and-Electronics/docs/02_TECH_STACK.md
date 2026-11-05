@@ -2,7 +2,7 @@
 ## Laxmi Electronics & Furnitures — Production Platform
 
 **Version:** 2.0 (Production Release)  
-**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
+**Location:** Main Market, Bhinder, Udaipur (Raj.) — Helpline: +91 820 939 9683  
 
 ---
 

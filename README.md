@@ -13,7 +13,7 @@
 <h3 align="center">Retail POS · Advance Wedding Packages · Inventory · Automated WhatsApp Dispatch</h3>
 
 <p align="center">
-  An enterprise-grade, multi-department enterprise resource and retail management platform built for <strong>Laxmi Electronics & Furnitures, Kanore (Udaipur, Rajasthan)</strong>.<br/>
+  An enterprise-grade, multi-department enterprise resource and retail management platform built for <strong>Laxmi Electronics & Furnitures, Bhinder (Udaipur, Rajasthan)</strong>.<br/>
   Orchestrates dual-department billing, advance wedding package bookings, vendor purchases, cloud design references, and automated PDF document delivery over WhatsApp.
 </p>
 
@@ -273,6 +273,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ---
 
 <p align="center">
-  Built with ❤️ for <strong>Laxmi Electronics & Furnitures, Kanore</strong><br/>
-  Main Market, Kanore, Udaipur (Raj.) • Helpline: +91 63755 91682
+  Built with ❤️ for <strong>Laxmi Electronics & Furnitures, Bhinder</strong><br/>
+  Main Market, Bhinder, Udaipur (Raj.) • Helpline: +91 820 939 9683
 </p>

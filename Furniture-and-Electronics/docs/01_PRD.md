@@ -2,7 +2,7 @@
 ## Laxmi Electronics & Furnitures — Retail POS, Advance Wedding Bookings & Automated WhatsApp Management System
 
 **Version:** 2.0 (Production Release)  
-**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
+**Location:** Main Market, Bhinder, Udaipur (Raj.) — Helpline: +91 820 939 9683  
 **Proprietor:** Suraj Menariya  
 **Status:** Implemented & Deployed  
 
@@ -10,7 +10,7 @@
 
 ## 1. Project Overview
 
-**Laxmi Electronics & Furnitures** is a premier showroom located in Kanore, Udaipur (Rajasthan), operating across two primary commercial departments:
+**Laxmi Electronics & Furnitures** is a premier showroom located in Bhinder, Udaipur (Rajasthan), operating across two primary commercial departments:
 1. **Furniture & Home Furnishings:** Handcrafted solid wood furniture (Sheesham, Teak), dining table sets, carved sofa suites, wardrobes, double beds, dressing tables, office setups, and custom upholstery.
 2. **Electronics & Consumer Appliances:** Smart 4K TVs, refrigerators, washing machines, desert coolers, soundbars, kitchen appliances, and ceiling fans.
 

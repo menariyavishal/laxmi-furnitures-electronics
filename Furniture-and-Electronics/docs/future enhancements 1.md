@@ -2,7 +2,7 @@
 ## Laxmi Electronics & Furnitures — Next-Generation Architectural Roadmap
 
 **Version:** 2.0 (Planning Document)  
-**Location:** Main Market, Kanore, Udaipur (Raj.) — Helpline: +91 63755 91682  
+**Location:** Main Market, Bhinder, Udaipur (Raj.) — Helpline: +91 820 939 9683  
 
 ---
 
@@ -78,7 +78,7 @@ Incentivize local families to refer upcoming weddings to Laxmi Electronics & Fur
 ## 4. Multi-Warehouse & Godown Stock Transfer
 
 ### Objective
-As the showroom expands storage across multiple godowns in Kanore:
+As the showroom expands storage across multiple godowns in Bhinder:
 * **Location-Based Inventory:** Track stock by physical location (Main Showroom Display vs. Central Godown).
 * **Inter-Godown Transfers:** Digital gate pass and transfer vouchers generated when shifting heavy solid wood furniture suites between the warehouse and the showroom.
 

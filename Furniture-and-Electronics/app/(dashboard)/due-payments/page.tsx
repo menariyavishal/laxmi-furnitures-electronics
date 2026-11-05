@@ -251,7 +251,7 @@ export default function DuePaymentsPage() {
         "en-IN"
       )}\n*Pending Due:* ₹${Number(bill.dueAmount).toLocaleString(
         "en-IN"
-      )}\n\nPlease arrange the payment at your earliest convenience.\n\n*Laxmi Electronics & Furnitures*\nPhone: +91 63755 91682`;
+      )}\n\nPlease arrange the payment at your earliest convenience.\n\n*Laxmi Electronics & Furnitures*\nPhone: +91 820 939 9683`;
 
       formData.append("customMessage", reminderMsg);
 
